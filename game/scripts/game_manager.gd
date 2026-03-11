@@ -24,12 +24,23 @@ extends Node3D
 @onready var axe_button: Button = $HUD/AxeButton
 @onready var sapling_label: Label = $HUD/SaplingLabel
 @onready var plant_button: Button = $HUD/PlantButton
+@onready var pickup_button: Button = $HUD/PickupButton
+
+# Sound-System
+var game_sounds: Node = null
 
 var message_timer: float = 0.0
 var deer_active: bool = false
 
 
 func _ready() -> void:
+	# Sound-System erstellen
+	var sounds_script: GDScript = preload("res://scripts/game_sounds.gd")
+	game_sounds = Node.new()
+	game_sounds.set_script(sounds_script)
+	game_sounds.name = "GameSounds"
+	add_child(game_sounds)
+
 	# Signale verbinden
 	player.hp_changed.connect(_on_hp_changed)
 	player.wood_changed.connect(_on_wood_changed)
@@ -47,10 +58,15 @@ func _ready() -> void:
 	harvest_button.pressed.connect(_on_harvest_pressed)
 	axe_button.pressed.connect(_on_axe_toggle_pressed)
 	plant_button.pressed.connect(_on_plant_pressed)
+	pickup_button.pressed.connect(_on_pickup_pressed)
 	player.sapling_changed.connect(_on_sapling_changed)
 
 	# Kamera-Controller mit Spieler verbinden
 	camera_controller.target = player
+
+	# Kamera näher und höher am Start
+	camera_controller.distance = 5.0
+	camera_controller.pitch = 35.0
 
 	# Spieler bekommt zum Start eine Steinaxt
 	player.give_axe(0)
@@ -66,13 +82,15 @@ func _ready() -> void:
 	sapling_label.text = "Setzlinge: 0"
 	plant_button.text = "Setzling pflanzen"
 	plant_button.visible = false
+	pickup_button.text = "Aufsammeln [E]"
+	pickup_button.visible = false
 
-	_show_message("Willkommen im Wald! Drücke 'Axt ziehen' und hacke Bäume!")
+	_show_message("Willkommen im Wald! Q=Axt, E=Hacken/Aufsammeln, F=Pflanzen")
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("action_chop"):
-		_on_harvest_pressed()
+		_on_action_pressed()
 	elif event.is_action_pressed("action_toggle_axe"):
 		_on_axe_toggle_pressed()
 	elif event.is_action_pressed("action_plant"):
@@ -92,8 +110,8 @@ func _process(delta: float) -> void:
 	# Craft-Button aktivieren/deaktivieren
 	craft_button.disabled = player.wood_count < 3 or player.has_torch
 
-	# Harvest-Button nur anzeigen wenn Bäume in der Nähe
-	_update_harvest_button()
+	# Buttons aktualisieren
+	_update_action_buttons()
 
 
 func _on_hp_changed(new_hp: float) -> void:
@@ -119,7 +137,6 @@ func _on_left_safe_zone() -> void:
 
 func _on_night_started(day: int) -> void:
 	_show_message("Nacht %d beginnt... der Hirsch erwacht!" % day, 3.0)
-	# Hirsch aktivieren
 	if not deer_active:
 		deer.activate(player, campfire.global_position)
 		deer_active = true
@@ -130,7 +147,6 @@ func _on_day_started(day: int) -> void:
 		_show_message("Du hast alle 99 Nächte überlebt! GEWONNEN!", 10.0)
 	else:
 		_show_message("Tag %d – der Hirsch zieht sich zurück." % day, 3.0)
-	# Hirsch deaktivieren
 	deer.deactivate()
 	deer_active = false
 
@@ -147,26 +163,68 @@ func _on_joystick_input(direction: Vector2) -> void:
 func _on_craft_pressed() -> void:
 	if player.craft_torch():
 		_show_message("Fackel gebaut! Du hast jetzt Licht.", 2.0)
+		if game_sounds:
+			game_sounds.play_pickup_sound()
 	else:
 		_show_message("Nicht genug Holz! (3 benötigt)", 2.0)
 
 
+func _on_action_pressed() -> void:
+	# E-Taste: Erst versuchen Items aufzusammeln, dann Baum hacken
+	if _try_pickup_nearby():
+		return
+	_on_harvest_pressed()
+
+
 func _on_harvest_pressed() -> void:
 	if player.axe_active:
-		# Mit Axt: Baum hacken (mehrere Hiebe nötig)
 		var result: Dictionary = player.try_chop_tree()
 		if result.chopped:
+			# Hack-Sound abspielen
+			if game_sounds:
+				game_sounds.play_chop_sound()
 			if result.felled:
-				_show_message("Baum gefällt! Sammle die Holzscheite auf!", 2.0)
-			else:
-				_show_message("Hack!", 0.5)
+				_show_message("Baum gefällt! Sammle die Säcke auf! [E]", 2.0)
+				if game_sounds:
+					game_sounds.play_fell_sound()
+			# Kein "Hack!" Text bei jedem Hieb – Sound reicht
 		else:
 			if player.chop_cooldown > 0:
-				pass  # Cooldown, keine Nachricht
+				pass
 			else:
 				_show_message("Kein Baum in Reichweite.", 1.5)
 	else:
-		_show_message("Ziehe zuerst deine Axt!", 1.5)
+		_show_message("Ziehe zuerst deine Axt! [Q]", 1.5)
+
+
+func _on_pickup_pressed() -> void:
+	_try_pickup_nearby()
+
+
+func _try_pickup_nearby() -> bool:
+	# Alle gedroppten Items durchsuchen
+	var items: Array = get_tree().get_nodes_in_group("dropped_item")
+	# Auch ohne Gruppe: alle Area3D-Kinder der Szene prüfen
+	if items.size() == 0:
+		items = _find_dropped_items()
+
+	for item in items:
+		if item.has_method("try_pickup"):
+			var picked: bool = item.try_pickup(player)
+			if picked:
+				if game_sounds:
+					game_sounds.play_pickup_sound()
+				_show_message("+1 aufgesammelt!", 1.0)
+				return true
+	return false
+
+
+func _find_dropped_items() -> Array:
+	var result: Array = []
+	for child in get_tree().current_scene.get_children():
+		if child.has_method("try_pickup"):
+			result.append(child)
+	return result
 
 
 func _on_sapling_changed(new_count: int) -> void:
@@ -177,6 +235,8 @@ func _on_sapling_changed(new_count: int) -> void:
 func _on_plant_pressed() -> void:
 	if player.plant_sapling():
 		_show_message("Setzling gepflanzt! Er wird langsam wachsen.", 2.0)
+		if game_sounds:
+			game_sounds.play_pickup_sound()
 	else:
 		_show_message("Keine Setzlinge vorhanden.", 1.5)
 
@@ -185,13 +245,12 @@ func _on_axe_toggle_pressed() -> void:
 	player.toggle_axe()
 	if player.axe_active:
 		axe_button.text = "Axt wegstecken"
-		harvest_button.text = "Baum hacken"
 	else:
 		axe_button.text = "Axt ziehen"
-		harvest_button.text = "Holz sammeln"
 
 
-func _update_harvest_button() -> void:
+func _update_action_buttons() -> void:
+	# Hack-Button: sichtbar wenn Baum in der Nähe und Axt aktiv
 	var near_tree := false
 	var trees := get_tree().get_nodes_in_group("tree")
 	for tree in trees:
@@ -200,7 +259,18 @@ func _update_harvest_button() -> void:
 			if distance < 5.0:
 				near_tree = true
 				break
-	harvest_button.visible = near_tree
+	harvest_button.visible = near_tree and player.axe_active
+	harvest_button.text = "Baum hacken [E]"
+
+	# Pickup-Button: sichtbar wenn Items in der Nähe
+	var near_item := false
+	var items: Array = _find_dropped_items()
+	for item in items:
+		var dist: float = player.global_position.distance_to(item.global_position)
+		if dist < 3.0:
+			near_item = true
+			break
+	pickup_button.visible = near_item
 
 
 func _update_hp_bar(hp: float) -> void:

@@ -23,13 +23,13 @@ extends Node3D
 @export var zoom_speed_key: float = 8.0
 @export var min_distance: float = 2.0
 @export var max_distance: float = 20.0
-@export var default_distance: float = 8.0
+@export var default_distance: float = 5.0
 @export var first_person_threshold: float = 2.5
 
 # Kamera-Winkel (in Grad)
 var yaw: float = 0.0       # Horizontale Drehung
-var pitch: float = 25.0    # Vertikale Neigung (positiv = von oben schauen)
-var distance: float = 8.0  # Abstand zum Spieler
+var pitch: float = 35.0    # Vertikale Neigung (positiv = von oben schauen)
+var distance: float = 5.0  # Abstand zum Spieler
 
 var target: Node3D = null
 

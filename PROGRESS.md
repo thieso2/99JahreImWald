@@ -262,3 +262,40 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - **Körperbewegung:** Rumpf lehnt sich vor/zurück und dreht sich seitlich
 - **Kopf:** Folgt der Körperbewegung leicht verzögert
 - Dauer verlängert auf 0.55s für realistischeren Look
+
+---
+
+## 2026-03-11 – Sounds, Säcke & Sammel-Mechanik
+
+### Prozedurale Spielgeräusche (`game_sounds.gd`)
+- **Hack-Sound:** Dumpfer Holz-Aufprall + kurzes Knacken bei jedem Hieb
+- **Sammel-Sound:** Aufsteigendes "Swoosh" beim Aufsammeln von Items
+- **Fäll-Sound:** Langes Krachen + Aufprall wenn ein Baum fällt
+- Alle Sounds prozedural via AudioStreamGenerator (keine externen Dateien)
+
+### Sichtbare Säcke statt abstrakte Items (`dropped_item.gd`)
+- **Holz-Sack:** Brauner Sack mit kleinem Holzscheit-Icon oben
+- **Setzling-Sack:** Grüner Sack mit Trieb-Icon oben
+- Größer und sichtbarer als vorher (Sack-Form mit Zipfel)
+- Fliegen aus dem Baum, landen am Boden, schweben leicht
+- Verschwinden nach 90 Sekunden (statt 60)
+
+### Einsammeln mit E-Taste (kein Auto-Pickup)
+- **E-Taste** ist jetzt die universelle Aktionstaste:
+  - Wenn Item in der Nähe → aufsammeln (mit Sound)
+  - Wenn Baum in der Nähe und Axt aktiv → hacken (mit Sound)
+- **Pickup-Button** erscheint im HUD wenn Items in der Nähe
+- Items müssen gezielt eingesammelt werden (Reichweite 2.5m)
+
+### Kamera näher und höher
+- **Startabstand:** 5.0 statt 8.0 (näher am Spieler)
+- **Startwinkel:** 35° statt 25° (mehr von oben schauen)
+
+### Tastenbelegung (aktualisiert)
+| Taste | Aktion |
+|-------|--------|
+| Q | Axt ziehen / wegstecken |
+| E | Aufsammeln / Baum hacken |
+| F | Setzling pflanzen |
+| Pfeiltasten | Bewegen + Kamera drehen |
+| Shift+Pfeile | Zoom + Neigung |

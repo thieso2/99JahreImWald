@@ -274,7 +274,20 @@ offset_left = -220.0
 offset_top = -300.0
 offset_right = -20.0
 offset_bottom = -250.0
-text = "Setzling pflanzen"
+text = "Setzling pflanzen [F]"
+visible = false
+
+[node name="PickupButton" type="Button" parent="HUD"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -60.0
+offset_right = -20.0
+offset_bottom = -10.0
+text = "Aufsammeln [E]"
 visible = false
 
 [node name="TouchJoystick" type="Control" parent="HUD"]
