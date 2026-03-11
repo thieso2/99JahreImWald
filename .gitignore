@@ -1,0 +1,12 @@
+# Godot 4+ specific ignores
+.godot/
+*.import
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Export
+export/
+*.pck
+*.zip
