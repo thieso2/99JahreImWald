@@ -199,13 +199,15 @@ func add_sapling(amount: int = 1) -> void:
 	inventory_changed.emit()
 
 
-func drop_item() -> String:
-	# Ältestes Item aus dem Inventar droppen (FIFO)
+func drop_item_at(index: int = 0) -> String:
+	# Item an bestimmtem Index aus dem Inventar droppen
 	if inventory.size() == 0:
 		return ""
+	if index < 0 or index >= inventory.size():
+		index = 0
 
-	var item_type: String = inventory[0]
-	inventory.remove_at(0)
+	var item_type: String = inventory[index]
+	inventory.remove_at(index)
 
 	# Zähler aktualisieren
 	match item_type:

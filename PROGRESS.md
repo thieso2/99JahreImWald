@@ -299,3 +299,23 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 | F | Setzling pflanzen |
 | Pfeiltasten | Bewegen + Kamera drehen |
 | Shift+Pfeile | Zoom + Neigung |
+
+---
+
+## 2026-03-11 – FIFO-Inventar & Minecraft-Style Hotbar
+
+### FIFO-Inventar (Reihenfolge beibehalten)
+- Jedes aufgesammelte Item wird in einer geordneten Liste gespeichert
+- **G-Taste:** Ausgewähltes Item als Sack vor dem Spieler ablegen
+- Crafting/Pflanzen entfernt Items korrekt aus dem Inventar
+
+### Inventarleiste (Minecraft-Style) (`inventory_bar.gd`)
+- **Hotbar** am unteren Bildschirmrand mit Slot-Kästchen
+- Ausgewählter Slot hat goldenen Rahmen und hellen Hintergrund
+- **Tab:** Nächsten Slot auswählen
+- **Shift+Tab:** Vorherigen Slot auswählen
+- **1-9 Tasten:** Direkt zum Slot springen
+- Maximal 9 Slots sichtbar, scrollt mit bei mehr Items
+- Item-Icons: Holz (braun) und Setzling (grün)
+- Item-Name unter dem ausgewählten Slot
+- Slot-Nummern in der Ecke

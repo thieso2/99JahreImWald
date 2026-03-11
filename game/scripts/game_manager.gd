@@ -30,6 +30,7 @@ extends Node3D
 
 # Sound-System
 var game_sounds: Node = null
+var inventory_bar: Control = null
 
 var message_timer: float = 0.0
 var deer_active: bool = false
@@ -42,6 +43,13 @@ func _ready() -> void:
 	game_sounds.set_script(sounds_script)
 	game_sounds.name = "GameSounds"
 	add_child(game_sounds)
+
+	# Inventarleiste erstellen
+	var inv_bar_script: GDScript = preload("res://scripts/inventory_bar.gd")
+	inventory_bar = Control.new()
+	inventory_bar.set_script(inv_bar_script)
+	inventory_bar.name = "InventoryBar"
+	hud.add_child(inventory_bar)
 
 	# Signale verbinden
 	player.hp_changed.connect(_on_hp_changed)
@@ -251,7 +259,10 @@ func _on_plant_pressed() -> void:
 
 
 func _on_drop_pressed() -> void:
-	var dropped: String = player.drop_item()
+	var drop_idx: int = 0
+	if inventory_bar:
+		drop_idx = inventory_bar.get_selected_index()
+	var dropped: String = player.drop_item_at(drop_idx)
 	if dropped != "":
 		var name_de: String = "Holz" if dropped == "wood" else "Setzling"
 		_show_message("%s abgelegt!" % name_de, 1.0)
@@ -263,6 +274,9 @@ func _on_drop_pressed() -> void:
 
 func _on_inventory_changed() -> void:
 	_update_inventory_label()
+	if inventory_bar:
+		inventory_bar.set_inventory(player.inventory)
+		inventory_bar.update_display()
 
 
 func _on_axe_toggle_pressed() -> void:
