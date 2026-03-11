@@ -44,10 +44,15 @@ Single scene architecture with one main scene (`scenes/main.tscn`) and GDScript 
 - **Signal wiring:** All signal connections happen in `game_manager._ready()`, not in individual scripts.
 - **Groups:** Player is in group `"player"`, trees are in group `"tree"`.
 
+## Workflow Rules
+
+- **Git commits:** Commit progress regularly after completing a feature, fixing a bug, or making significant changes. Do not wait for the user to ask — commit proactively.
+- **PROGRESS.md:** Must be updated after every development step. Documents all changes made, bugs fixed, and important decisions with dates. Append new entries at the bottom.
+
 ## Documentation
 
 - `game-design.md` — Full design document: MVP roadmap, enemy descriptions, biome plans, class system design
-- `PROGRESS.md` — **Must be updated** after every development step. Documents all changes made, bugs fixed, and important decisions with dates. Append new entries at the bottom.
+- `PROGRESS.md` — Fortlaufende Entwicklungsdokumentation (see Workflow Rules)
 
 ## Language
 
