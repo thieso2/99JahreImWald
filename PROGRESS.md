@@ -97,3 +97,25 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
   - Ast knacken (kurzer Knack, 20%)
 - Leichte Timing-Variation zwischen Schritten (0.32-0.42s)
 - Nur aktiv wenn der Spieler sich bewegt
+
+---
+
+## 2026-03-11 – Roblox-Style Steuerung
+
+### Recherche
+- Roblox-Standardsteuerung analysiert: Bewegung relativ zur Kamera, rechte Maustaste für Kamera-Rotation, Mausrad Zoom, Touch-Joystick + Screen-Drag auf iPad
+
+### Kamera komplett neu geschrieben
+- **Entscheidung:** `_unhandled_input` statt `_input` → UI-Buttons blockieren Kamera-Input korrekt
+- **PC:** Rechte Maustaste gedrückt + Maus = Kamera drehen (wie Roblox)
+- **PC:** Mausrad = Zoom, Shift+Pfeiltasten = Zoom
+- **iPad:** Touch-Drag (nicht auf Joystick) = Kamera drehen
+- **iPad:** Pinch = Zoom
+- Kamera schaut auf Spieler-Brusthöhe (Y=1.2) statt auf den Boden
+- Joystick-Bereich (links unten) wird korrekt ausgespart
+
+### Bewegung Roblox-Style
+- **W** = vorwärts in Kamera-Blickrichtung (nicht Welt-Norden)
+- **S** = rückwärts, **A/D** = seitlich relativ zur Kamera
+- Charakter-Drehgeschwindigkeit von 3.0 auf 15.0 erhöht (fast sofortige Drehung wie in Roblox)
+- Gleiche Logik für Touch-Joystick

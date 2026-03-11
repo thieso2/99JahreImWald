@@ -4,7 +4,7 @@ extends CharacterBody3D
 @export var speed: float = 5.0
 @export var sprint_speed: float = 8.0
 @export var max_hp: float = 100.0
-@export var rotation_speed: float = 3.0
+@export var rotation_speed: float = 15.0  # Schnelle Drehung wie in Roblox
 
 # Zustand
 var hp: float = 100.0
@@ -61,7 +61,7 @@ func _physics_process(delta: float) -> void:
 	if joystick_direction.length() > 0.1:
 		input_dir = joystick_direction
 
-	# Auch Tastatur-Input unterstützen (zum Testen am PC)
+	# Tastatur-Input (WASD)
 	if input_dir.length() < 0.1:
 		if Input.is_action_pressed("move_forward"):
 			input_dir.y -= 1
@@ -72,27 +72,29 @@ func _physics_process(delta: float) -> void:
 		if Input.is_action_pressed("move_right"):
 			input_dir.x += 1
 
-	# Bewegungsrichtung relativ zur Kamera-Rotation berechnen
+	# Roblox-Style: Bewegung relativ zur Kamera
+	# W = vorwärts in Kamera-Blickrichtung, A/D = seitlich
 	var direction := Vector3.ZERO
 	var walking := false
 	if input_dir.length() > 0.1:
 		input_dir = input_dir.normalized()
 		var yaw_rad: float = deg_to_rad(camera_yaw)
-		var forward := Vector3(-sin(yaw_rad), 0, -cos(yaw_rad))
-		var right := Vector3(cos(yaw_rad), 0, -sin(yaw_rad))
-		direction = (forward * -input_dir.y + right * input_dir.x).normalized()
+		# Kamera-Vorwärts (horizontal, auf dem Boden)
+		var cam_forward := Vector3(sin(yaw_rad), 0, cos(yaw_rad))
+		var cam_right := Vector3(cos(yaw_rad), 0, -sin(yaw_rad))
+		direction = (cam_forward * input_dir.y + cam_right * input_dir.x).normalized()
 		walking = true
 
 	# Geschwindigkeit setzen
 	velocity.x = direction.x * speed
 	velocity.z = direction.z * speed
 
-	# Spieler sanft in Bewegungsrichtung drehen
+	# Roblox-Style: Charakter dreht sich schnell in Bewegungsrichtung
 	if direction.length() > 0.1:
 		var target_rotation := atan2(direction.x, direction.z)
 		rotation.y = lerp_angle(rotation.y, target_rotation, rotation_speed * delta)
 
-	# Animation und Sound aktualisieren
+	# Animation und Sound
 	if player_model:
 		player_model.set_walking(walking)
 	if footsteps:

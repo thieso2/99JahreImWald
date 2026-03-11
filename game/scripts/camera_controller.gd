@@ -1,30 +1,33 @@
 extends Node3D
 
-# Kamera-Controller: Rotation per Touch-Drag, Zoom per Pinch
+# Roblox-Style Kamera: Orbitet um den Spieler
+# - Rechte Maustaste + Maus = Drehen (PC)
+# - Touch-Drag (nicht auf Joystick) = Drehen (iPad)
+# - Mausrad / Pinch / Shift+Pfeiltasten = Zoom
+# - Kamera folgt dem Spieler sanft
 
-@export var follow_speed: float = 8.0
-@export var rotation_sensitivity: float = 0.3
-@export var zoom_speed: float = 2.0
-@export var key_rotate_speed: float = 120.0  # Grad pro Sekunde
-@export var key_zoom_speed: float = 8.0      # Einheiten pro Sekunde
-@export var min_zoom: float = 1.5   # Nah (fast First-Person)
-@export var max_zoom: float = 20.0  # Weit weg
-@export var default_zoom: float = 12.0
-@export var min_pitch: float = -10.0  # Grad - fast horizontal
-@export var max_pitch: float = -70.0  # Grad - fast von oben
-@export var first_person_threshold: float = 2.5  # Ab diesem Zoom -> First Person
+@export var follow_speed: float = 10.0
+@export var rotation_sensitivity_mouse: float = 0.2
+@export var rotation_sensitivity_touch: float = 0.25
+@export var zoom_speed_scroll: float = 1.5
+@export var zoom_speed_key: float = 8.0
+@export var min_zoom: float = 2.0
+@export var max_zoom: float = 25.0
+@export var default_zoom: float = 10.0
+@export var min_pitch: float = -80.0   # Fast von oben
+@export var max_pitch: float = -5.0    # Fast horizontal
+@export var first_person_threshold: float = 2.5
 
 var target: Node3D = null
-var current_zoom: float = 12.0
-var camera_yaw: float = 0.0    # Horizontale Rotation (Grad)
-var camera_pitch: float = -35.0  # Vertikale Neigung (Grad)
+var current_zoom: float = 10.0
+var camera_yaw: float = 0.0
+var camera_pitch: float = -30.0
 
 # Touch-Tracking
-var touch_points: Dictionary = {}  # index -> position
-var last_touch_distance: float = 0.0
-var is_rotating: bool = false
-var rotate_touch_index: int = -1
-var last_rotate_pos: Vector2 = Vector2.ZERO
+var camera_touch_index: int = -1
+var last_camera_touch_pos: Vector2 = Vector2.ZERO
+var pinch_touch_ids: Array[int] = []
+var last_pinch_distance: float = 0.0
 
 @onready var camera: Camera3D = $Camera3D
 
@@ -35,88 +38,78 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	# Spieler folgen
 	if target:
-		# Sanft dem Spieler folgen
 		global_position = global_position.lerp(target.global_position, follow_speed * delta)
 
-	# Tastatur-Kamerasteuerung
+	# Tastatur: Zoom mit Shift + Pfeiltasten
 	var shift_held := Input.is_key_pressed(KEY_SHIFT)
-
 	if shift_held:
-		# Shift + Hoch/Runter: Zoom
 		if Input.is_key_pressed(KEY_UP):
-			current_zoom = clampf(current_zoom - key_zoom_speed * delta, min_zoom, max_zoom)
+			current_zoom = clampf(current_zoom - zoom_speed_key * delta, min_zoom, max_zoom)
 		if Input.is_key_pressed(KEY_DOWN):
-			current_zoom = clampf(current_zoom + key_zoom_speed * delta, min_zoom, max_zoom)
-	else:
-		# Hoch/Runter: Kamera neigen
-		if Input.is_key_pressed(KEY_UP):
-			camera_pitch = clampf(camera_pitch + key_rotate_speed * delta, max_pitch, min_pitch)
-		if Input.is_key_pressed(KEY_DOWN):
-			camera_pitch = clampf(camera_pitch - key_rotate_speed * delta, max_pitch, min_pitch)
-
-	# Links/Rechts: Kamera drehen (immer, mit oder ohne Shift)
-	if Input.is_key_pressed(KEY_LEFT):
-		camera_yaw += key_rotate_speed * delta
-	if Input.is_key_pressed(KEY_RIGHT):
-		camera_yaw -= key_rotate_speed * delta
+			current_zoom = clampf(current_zoom + zoom_speed_key * delta, min_zoom, max_zoom)
 
 	_update_camera_transform()
 
 
-func _input(event: InputEvent) -> void:
-	# Touch-Events tracken
-	if event is InputEventScreenTouch:
-		if event.pressed:
-			touch_points[event.index] = event.position
-			# Wenn nur ein Finger und auf der rechten Bildschirmhälfte -> Rotation
-			if touch_points.size() == 1:
-				var screen_width: float = get_viewport().get_visible_rect().size.x
-				if event.position.x > screen_width * 0.35:
-					is_rotating = true
-					rotate_touch_index = event.index
-					last_rotate_pos = event.position
-			# Zwei Finger -> Pinch-Zoom vorbereiten
-			if touch_points.size() == 2:
-				is_rotating = false
-				var points := touch_points.values()
-				last_touch_distance = (points[0] as Vector2).distance_to(points[1] as Vector2)
-		else:
-			touch_points.erase(event.index)
-			if event.index == rotate_touch_index:
-				is_rotating = false
-				rotate_touch_index = -1
+func _unhandled_input(event: InputEvent) -> void:
+	# === MAUS (PC) ===
+	# Rechte Maustaste + Mausbewegung = Kamera drehen
+	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		camera_yaw -= event.relative.x * rotation_sensitivity_mouse
+		camera_pitch = clampf(camera_pitch + event.relative.y * rotation_sensitivity_mouse, min_pitch, max_pitch)
+		get_viewport().set_input_as_handled()
 
-	elif event is InputEventScreenDrag:
-		touch_points[event.index] = event.position
-
-		# Rotation mit einem Finger (rechte Seite)
-		if is_rotating and event.index == rotate_touch_index and touch_points.size() == 1:
-			var delta_pos: Vector2 = event.position - last_rotate_pos
-			camera_yaw -= delta_pos.x * rotation_sensitivity
-			camera_pitch = clampf(camera_pitch - delta_pos.y * rotation_sensitivity, max_pitch, min_pitch)
-			last_rotate_pos = event.position
-
-		# Pinch-Zoom mit zwei Fingern
-		if touch_points.size() == 2:
-			var points := touch_points.values()
-			var current_distance: float = (points[0] as Vector2).distance_to(points[1] as Vector2)
-			if last_touch_distance > 0:
-				var zoom_delta: float = (last_touch_distance - current_distance) * 0.05
-				current_zoom = clampf(current_zoom + zoom_delta, min_zoom, max_zoom)
-			last_touch_distance = current_distance
-
-	# Mausrad zum Zoomen (PC-Test)
+	# Mausrad = Zoom
 	elif event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			current_zoom = clampf(current_zoom - zoom_speed, min_zoom, max_zoom)
+			current_zoom = clampf(current_zoom - zoom_speed_scroll, min_zoom, max_zoom)
+			get_viewport().set_input_as_handled()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			current_zoom = clampf(current_zoom + zoom_speed, min_zoom, max_zoom)
+			current_zoom = clampf(current_zoom + zoom_speed_scroll, min_zoom, max_zoom)
+			get_viewport().set_input_as_handled()
 
-	# Rechte Maustaste zum Rotieren (PC-Test)
-	elif event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-		camera_yaw -= event.relative.x * rotation_sensitivity
-		camera_pitch = clampf(camera_pitch - event.relative.y * rotation_sensitivity, max_pitch, min_pitch)
+	# === TOUCH (iPad) ===
+	elif event is InputEventScreenTouch:
+		if event.pressed:
+			# Prüfe ob Touch NICHT auf dem Joystick ist (linke untere Ecke)
+			if not _is_on_joystick(event.position):
+				if pinch_touch_ids.size() == 0 and camera_touch_index == -1:
+					# Erster Finger für Kamera-Rotation
+					camera_touch_index = event.index
+					last_camera_touch_pos = event.position
+				elif pinch_touch_ids.size() == 0 and camera_touch_index != -1:
+					# Zweiter Finger -> Pinch-Zoom
+					pinch_touch_ids = [camera_touch_index, event.index]
+					camera_touch_index = -1
+					var pos1: Vector2 = last_camera_touch_pos
+					var pos2: Vector2 = event.position
+					last_pinch_distance = pos1.distance_to(pos2)
+		else:
+			# Finger losgelassen
+			if event.index == camera_touch_index:
+				camera_touch_index = -1
+			if event.index in pinch_touch_ids:
+				pinch_touch_ids.clear()
+				last_pinch_distance = 0.0
+
+	elif event is InputEventScreenDrag:
+		# Kamera-Rotation mit einem Finger
+		if event.index == camera_touch_index and pinch_touch_ids.is_empty():
+			var delta_pos: Vector2 = event.position - last_camera_touch_pos
+			camera_yaw -= delta_pos.x * rotation_sensitivity_touch
+			camera_pitch = clampf(camera_pitch + delta_pos.y * rotation_sensitivity_touch, min_pitch, max_pitch)
+			last_camera_touch_pos = event.position
+
+		# Pinch-Zoom
+		if event.index in pinch_touch_ids and pinch_touch_ids.size() == 2:
+			# Wir tracken nur die Distanzänderung
+			# (vereinfacht: reagiert auf jede Drag-Bewegung)
+			if last_pinch_distance > 0:
+				# Berechne neue Distanz basierend auf aktuellem Drag
+				var zoom_change: float = -event.relative.y * 0.03
+				current_zoom = clampf(current_zoom + zoom_change, min_zoom, max_zoom)
 
 
 func _update_camera_transform() -> void:
@@ -126,10 +119,10 @@ func _update_camera_transform() -> void:
 	var is_first_person: bool = current_zoom < first_person_threshold
 
 	if is_first_person:
-		# First-Person: Kamera auf Augenhöhe des Spielers
+		# First-Person: Kamera auf Augenhöhe
 		camera.position = Vector3(0, 1.8, 0)
-		camera.rotation_degrees = Vector3(camera_pitch * 0.3, camera_yaw, 0)
-		# Spieler-Mesh verstecken in First-Person
+		var fp_pitch: float = clampf(camera_pitch, -80.0, 10.0)
+		camera.rotation_degrees = Vector3(fp_pitch, camera_yaw, 0)
 		if target:
 			_set_player_visible(false)
 	else:
@@ -143,17 +136,24 @@ func _update_camera_transform() -> void:
 		offset.y = -sin(pitch_rad) * current_zoom
 
 		camera.position = offset
-		camera.look_at(Vector3.ZERO, Vector3.UP)
+		camera.look_at(Vector3(0, 1.2, 0), Vector3.UP)
 
 		if target:
 			_set_player_visible(true)
 
 
-func _set_player_visible(visible: bool) -> void:
+func _set_player_visible(vis: bool) -> void:
 	if target:
+		# PlayerModel ist ein Kind des Spielers
 		for child in target.get_children():
-			if child is MeshInstance3D:
-				child.visible = visible
+			if child.name == "PlayerModel":
+				child.visible = vis
+
+
+func _is_on_joystick(pos: Vector2) -> bool:
+	# Joystick ist links unten, ca. 200x200 Pixel
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+	return pos.x < 230 and pos.y > screen_size.y - 230
 
 
 func get_camera_yaw() -> float:
