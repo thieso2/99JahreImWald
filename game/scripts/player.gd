@@ -57,7 +57,7 @@ func _physics_process(delta: float) -> void:
 
 	# Input sammeln (Joystick oder Tastatur)
 	var input_dir := Vector2.ZERO
-	var ctrl_held := Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
+	var shift_held := Input.is_key_pressed(KEY_SHIFT)
 
 	if joystick_direction.length() > 0.1:
 		input_dir = joystick_direction
@@ -74,7 +74,7 @@ func _physics_process(delta: float) -> void:
 			input_dir.x += 1
 
 	# Pfeiltasten Hoch/Runter: Bewegung (nur ohne Ctrl)
-	if input_dir.length() < 0.1 and not ctrl_held:
+	if input_dir.length() < 0.1 and not shift_held:
 		if Input.is_key_pressed(KEY_UP):
 			input_dir.y += 1
 		if Input.is_key_pressed(KEY_DOWN):

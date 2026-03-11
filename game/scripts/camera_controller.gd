@@ -3,13 +3,13 @@ extends Node3D
 # Kamera-Steuerung
 #
 # Pfeiltasten:
-#   Links/Rechts = Kamera drehen (Spieler dreht mit)
+#   Links/Rechts = Kamera drehen
 #   Hoch = Vorwärts laufen (in Kamera-Blickrichtung)
 #   Runter = Umdrehen und rückwärts laufen
 #
-# Ctrl + Pfeiltasten:
-#   Links/Rechts = Kamera drehen (schneller)
-#   Hoch/Runter = Kamera neigen
+# Shift + Pfeiltasten:
+#   Hoch/Runter = Kamera-Abstand (Zoom)
+#   Links/Rechts = Kamera-Winkel (Neigung)
 #
 # +/- = Zoom, Mausrad = Zoom
 # Rechte Maustaste + Maus = Kamera frei drehen
@@ -18,7 +18,6 @@ extends Node3D
 @export var rotation_sensitivity_mouse: float = 0.3
 @export var rotation_sensitivity_touch: float = 0.3
 @export var turn_speed: float = 120.0         # Grad/s: Pfeiltasten drehen
-@export var ctrl_turn_speed: float = 180.0    # Grad/s: Ctrl+Pfeiltasten drehen
 @export var pitch_speed: float = 60.0         # Grad/s: Ctrl+Hoch/Runter neigen
 @export var zoom_speed_scroll: float = 1.0
 @export var zoom_speed_key: float = 8.0
@@ -46,17 +45,17 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	var ctrl_held := Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
+	var shift_held := Input.is_key_pressed(KEY_SHIFT)
 
-	if ctrl_held:
-		# Ctrl + Pfeiltasten: Kamera neigen und drehen
-		if Input.is_key_pressed(KEY_LEFT):
-			yaw -= ctrl_turn_speed * delta
-		if Input.is_key_pressed(KEY_RIGHT):
-			yaw += ctrl_turn_speed * delta
+	if shift_held:
+		# Shift + Pfeiltasten: Kamera-Winkel und Abstand
 		if Input.is_key_pressed(KEY_UP):
-			pitch = clampf(pitch + pitch_speed * delta, 5.0, 80.0)
+			distance = clampf(distance - zoom_speed_key * delta, min_distance, max_distance)
 		if Input.is_key_pressed(KEY_DOWN):
+			distance = clampf(distance + zoom_speed_key * delta, min_distance, max_distance)
+		if Input.is_key_pressed(KEY_LEFT):
+			pitch = clampf(pitch + pitch_speed * delta, 5.0, 80.0)
+		if Input.is_key_pressed(KEY_RIGHT):
 			pitch = clampf(pitch - pitch_speed * delta, 5.0, 80.0)
 	else:
 		# Pfeiltasten Links/Rechts: Kamera drehen
@@ -147,5 +146,3 @@ func get_yaw() -> float:
 	return yaw
 
 
-func is_ctrl_held() -> bool:
-	return Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
