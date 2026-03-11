@@ -142,3 +142,16 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - **Vorwärts-Vektor** korrekt abgeleitet aus Kamera-Position: `(sin(yaw), 0, -cos(yaw))`
 - **W-Taste:** `input_dir.y = +1` (nicht mehr -1), konsistent mit Vorwärts
 - **Bewegung getestet:** W = weg von Kamera, S = zur Kamera, A = links, D = rechts
+
+---
+
+## 2026-03-11 – Steuerung nach Nutzerwunsch angepasst
+
+### Neue Tastenbelegung
+- **Pfeiltasten Links/Rechts:** Kamera um Spieler drehen (Spieler steht still)
+- **Pfeil Hoch:** Vorwärts laufen in Kamera-Blickrichtung (Spieler dreht sich dabei)
+- **Pfeil Runter:** Umdrehen und rückwärts laufen
+- **Ctrl + Pfeiltasten:** Kamera neigen (Hoch/Runter) und schneller drehen (Links/Rechts)
+- **WASD:** Alternative Bewegung
+- **+/-:** Zoom
+- Roblox-Verhalten: Kamera orbitet frei um Spieler, Spieler dreht erst bei Bewegung

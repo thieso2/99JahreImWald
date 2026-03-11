@@ -57,11 +57,12 @@ func _physics_process(delta: float) -> void:
 
 	# Input sammeln (Joystick oder Tastatur)
 	var input_dir := Vector2.ZERO
+	var ctrl_held := Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
 
 	if joystick_direction.length() > 0.1:
 		input_dir = joystick_direction
 
-	# Tastatur-Input (WASD)
+	# WASD: immer Bewegung
 	if input_dir.length() < 0.1:
 		if Input.is_action_pressed("move_forward"):
 			input_dir.y += 1
@@ -72,9 +73,14 @@ func _physics_process(delta: float) -> void:
 		if Input.is_action_pressed("move_right"):
 			input_dir.x += 1
 
-	# Roblox-Style Bewegung: relativ zur Kamera-Blickrichtung
-	# W = weg von der Kamera (vorwärts), S = zur Kamera (rückwärts)
-	# A = links von der Kamera, D = rechts von der Kamera
+	# Pfeiltasten Hoch/Runter: Bewegung (nur ohne Ctrl)
+	if input_dir.length() < 0.1 and not ctrl_held:
+		if Input.is_key_pressed(KEY_UP):
+			input_dir.y += 1
+		if Input.is_key_pressed(KEY_DOWN):
+			input_dir.y -= 1
+
+	# Bewegung relativ zur Kamera-Blickrichtung
 	var direction := Vector3.ZERO
 	var walking := false
 	if input_dir.length() > 0.1:
@@ -82,8 +88,6 @@ func _physics_process(delta: float) -> void:
 		var yaw_rad: float = deg_to_rad(camera_yaw)
 
 		# "Vorwärts" = Richtung von der Kamera weg zum Spieler
-		# Kamera ist bei -sin(yaw)*dist, cos(yaw)*dist
-		# Also ist "vorwärts" = sin(yaw), 0, -cos(yaw)
 		var forward := Vector3(sin(yaw_rad), 0, -cos(yaw_rad))
 		var right := Vector3(cos(yaw_rad), 0, sin(yaw_rad))
 

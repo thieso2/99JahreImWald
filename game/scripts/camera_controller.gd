@@ -1,19 +1,25 @@
 extends Node3D
 
-# Roblox-Style Third-Person Kamera
+# Kamera-Steuerung
 #
-# PC: Rechte Maustaste gedrückt + Maus = Kamera drehen
-#     Mausrad = Zoom
-#     Pfeiltasten Links/Rechts = Kamera drehen
-#     Pfeiltasten Hoch/Runter = Kamera neigen
-#     +/- = Zoom
+# Pfeiltasten:
+#   Links/Rechts = Kamera drehen (Spieler dreht mit)
+#   Hoch = Vorwärts laufen (in Kamera-Blickrichtung)
+#   Runter = Umdrehen und rückwärts laufen
 #
-# iPad: Bildschirm wischen (nicht Joystick) = Kamera drehen
-#       Pinch = Zoom
+# Ctrl + Pfeiltasten:
+#   Links/Rechts = Kamera drehen (schneller)
+#   Hoch/Runter = Kamera neigen
+#
+# +/- = Zoom, Mausrad = Zoom
+# Rechte Maustaste + Maus = Kamera frei drehen
+# Touch: Bildschirm wischen = drehen, Pinch = Zoom
 
 @export var rotation_sensitivity_mouse: float = 0.3
 @export var rotation_sensitivity_touch: float = 0.3
-@export var key_rotate_speed: float = 90.0
+@export var turn_speed: float = 120.0         # Grad/s: Pfeiltasten drehen
+@export var ctrl_turn_speed: float = 180.0    # Grad/s: Ctrl+Pfeiltasten drehen
+@export var pitch_speed: float = 60.0         # Grad/s: Ctrl+Hoch/Runter neigen
 @export var zoom_speed_scroll: float = 1.0
 @export var zoom_speed_key: float = 8.0
 @export var min_distance: float = 2.0
@@ -23,8 +29,8 @@ extends Node3D
 
 # Kamera-Winkel (in Grad)
 var yaw: float = 0.0       # Horizontale Drehung
-var pitch: float = 25.0     # Vertikale Neigung (positiv = von oben schauen)
-var distance: float = 8.0   # Abstand zum Spieler
+var pitch: float = 25.0    # Vertikale Neigung (positiv = von oben schauen)
+var distance: float = 8.0  # Abstand zum Spieler
 
 var target: Node3D = null
 
@@ -40,17 +46,26 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	# Tastatur: Kamera drehen mit Pfeiltasten
-	if Input.is_key_pressed(KEY_LEFT):
-		yaw -= key_rotate_speed * delta
-	if Input.is_key_pressed(KEY_RIGHT):
-		yaw += key_rotate_speed * delta
-	if Input.is_key_pressed(KEY_UP):
-		pitch = clampf(pitch + key_rotate_speed * delta, 5.0, 80.0)
-	if Input.is_key_pressed(KEY_DOWN):
-		pitch = clampf(pitch - key_rotate_speed * delta, 5.0, 80.0)
+	var ctrl_held := Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
 
-	# Tastatur: Zoom mit +/-
+	if ctrl_held:
+		# Ctrl + Pfeiltasten: Kamera neigen und drehen
+		if Input.is_key_pressed(KEY_LEFT):
+			yaw -= ctrl_turn_speed * delta
+		if Input.is_key_pressed(KEY_RIGHT):
+			yaw += ctrl_turn_speed * delta
+		if Input.is_key_pressed(KEY_UP):
+			pitch = clampf(pitch + pitch_speed * delta, 5.0, 80.0)
+		if Input.is_key_pressed(KEY_DOWN):
+			pitch = clampf(pitch - pitch_speed * delta, 5.0, 80.0)
+	else:
+		# Pfeiltasten Links/Rechts: Kamera drehen
+		if Input.is_key_pressed(KEY_LEFT):
+			yaw -= turn_speed * delta
+		if Input.is_key_pressed(KEY_RIGHT):
+			yaw += turn_speed * delta
+
+	# Zoom mit +/-
 	if Input.is_key_pressed(KEY_EQUAL) or Input.is_key_pressed(KEY_KP_ADD):
 		distance = clampf(distance - zoom_speed_key * delta, min_distance, max_distance)
 	if Input.is_key_pressed(KEY_MINUS) or Input.is_key_pressed(KEY_KP_SUBTRACT):
@@ -60,18 +75,19 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# === MAUS ===
+	# Rechte Maustaste + Maus = Kamera frei drehen
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		yaw += event.relative.x * rotation_sensitivity_mouse
 		pitch = clampf(pitch - event.relative.y * rotation_sensitivity_mouse, 5.0, 80.0)
 
+	# Mausrad = Zoom
 	elif event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			distance = clampf(distance - zoom_speed_scroll, min_distance, max_distance)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			distance = clampf(distance + zoom_speed_scroll, min_distance, max_distance)
 
-	# === TOUCH ===
+	# Touch: Bildschirm wischen = drehen
 	elif event is InputEventScreenTouch:
 		if event.pressed:
 			if not _is_on_joystick(event.position) and camera_touch_index == -1:
@@ -96,30 +112,22 @@ func _update_camera() -> void:
 	var is_first_person: bool = distance < first_person_threshold
 
 	if is_first_person:
-		# First-Person
 		global_position = target.global_position + Vector3(0, 1.7, 0)
 		camera.position = Vector3.ZERO
 		camera.rotation_degrees = Vector3(-pitch, -yaw, 0)
 		_set_player_visible(false)
 	else:
-		# Third-Person: Kamera orbitet um den Spieler
-		# Kamera-Position berechnen: Kugelkoordinaten
 		var yaw_rad: float = deg_to_rad(yaw)
 		var pitch_rad: float = deg_to_rad(pitch)
 
-		# Kamera-Position relativ zum Spieler
 		var cam_offset := Vector3.ZERO
 		cam_offset.x = -sin(yaw_rad) * cos(pitch_rad) * distance
 		cam_offset.z = cos(yaw_rad) * cos(pitch_rad) * distance
 		cam_offset.y = sin(pitch_rad) * distance
 
-		# Rig auf Spielerposition setzen (sofort, kein Lag)
 		global_position = target.global_position
-
-		# Kamera positionieren und auf Spieler schauen
 		camera.position = cam_offset
 		camera.look_at(target.global_position + Vector3(0, 1.2, 0), Vector3.UP)
-
 		_set_player_visible(true)
 
 
@@ -137,3 +145,7 @@ func _is_on_joystick(pos: Vector2) -> bool:
 
 func get_yaw() -> float:
 	return yaw
+
+
+func is_ctrl_held() -> bool:
+	return Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
