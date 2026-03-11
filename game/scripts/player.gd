@@ -14,6 +14,9 @@ var has_torch: bool = false
 var is_near_campfire: bool = false
 var is_safe: bool = false
 
+# Setzlinge
+var sapling_count: int = 0
+
 # Axt-System
 var has_axe: bool = false
 var axe_tier: int = 0         # 0=Stein, 1=Eisen, 2=Stahl
@@ -37,6 +40,7 @@ signal player_died()
 signal entered_safe_zone()
 signal left_safe_zone()
 signal axe_changed(active: bool)
+signal sapling_changed(new_count: int)
 
 
 func _ready() -> void:
@@ -175,6 +179,34 @@ func _on_safe_zone_exited() -> void:
 	left_safe_zone.emit()
 
 
+func add_sapling(amount: int = 1) -> void:
+	sapling_count += amount
+	sapling_changed.emit(sapling_count)
+
+
+func plant_sapling() -> bool:
+	if sapling_count <= 0:
+		return false
+
+	var sapling_script: GDScript = preload("res://scripts/sapling.gd")
+	var sapling := StaticBody3D.new()
+	sapling.set_script(sapling_script)
+
+	# Setzling 2m vor dem Spieler pflanzen
+	var forward := Vector3(sin(rotation.y), 0, cos(rotation.y))
+	var plant_pos: Vector3 = global_position + forward * 2.0
+	plant_pos.y = 0.0
+	sapling.position = plant_pos
+
+	var tree_root: Node = get_tree().current_scene
+	if tree_root:
+		tree_root.add_child(sapling)
+		sapling_count -= 1
+		sapling_changed.emit(sapling_count)
+		return true
+	return false
+
+
 func give_axe(tier: int) -> void:
 	has_axe = true
 	axe_tier = tier
@@ -253,6 +285,6 @@ func try_chop_tree() -> Dictionary:
 	if felled:
 		result.felled = true
 		result.wood = nearest_tree.wood_amount
-		add_wood(nearest_tree.wood_amount)
+		# Holz kommt jetzt durch aufsammelbare Drops, nicht direkt
 
 	return result

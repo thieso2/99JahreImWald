@@ -22,11 +22,16 @@ var trunk_mesh: MeshInstance3D = null
 var leaves_mesh: MeshInstance3D = null
 var collision: CollisionShape3D = null
 
+# Drop-Scripts
+var dropped_item_script: GDScript = null
+
 # Signale
 signal tree_felled(wood: int)
 
 
 func _ready() -> void:
+	dropped_item_script = preload("res://scripts/dropped_item.gd")
+
 	# Nodes dynamisch finden
 	for child in get_children():
 		if child is MeshInstance3D and child.name == "MeshInstance3D":
@@ -109,9 +114,41 @@ func _fell_tree() -> void:
 	shake_offset = 0.0
 	shake_decay = 0.0
 
+	# Items droppen: 3 Holzscheite + 1 Setzling
+	_spawn_drops()
+
 
 func _shake_tree() -> void:
 	shake_decay = 1.0
+
+
+func _spawn_drops() -> void:
+	if not dropped_item_script:
+		return
+
+	var tree_root: Node = get_tree().current_scene
+	if not tree_root:
+		return
+
+	# 3 Holzscheite droppen
+	for i in range(3):
+		var log_item := Area3D.new()
+		log_item.set_script(dropped_item_script)
+		log_item.item_type = 0  # LOG
+		log_item.position = global_position + Vector3(0, 2.0, 0)
+		# Kollisionsmaske: nur mit Spieler kollidieren
+		log_item.collision_layer = 0
+		log_item.collision_mask = 1
+		tree_root.add_child(log_item)
+
+	# 1 Setzling droppen
+	var sapling_item := Area3D.new()
+	sapling_item.set_script(dropped_item_script)
+	sapling_item.item_type = 1  # SAPLING
+	sapling_item.position = global_position + Vector3(0, 2.5, 0)
+	sapling_item.collision_layer = 0
+	sapling_item.collision_mask = 1
+	tree_root.add_child(sapling_item)
 
 
 func _respawn() -> void:

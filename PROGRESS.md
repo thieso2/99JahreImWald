@@ -231,3 +231,34 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - **E-Taste:** Baum hacken (wenn Axt gezückt und Baum in Reichweite)
 - **HUD-Buttons:** "Axt ziehen/wegstecken" und "Baum hacken" (unten rechts)
 - Spieler bekommt beim Start eine Steinaxt
+
+---
+
+## 2026-03-11 – Item-Drops, Setzlinge & verbesserte Animation
+
+### Item-Drops beim Baumfällen (`dropped_item.gd`)
+- **3 Holzscheite** fliegen aus dem Baum (zufällige Richtung, Schwerkraft, landen am Boden)
+- **1 Setzling** fliegt ebenfalls heraus
+- Items schweben leicht und drehen sich am Boden
+- **Auto-Pickup:** Spieler läuft über Items, um sie aufzusammeln
+- Items verschwinden nach 60 Sekunden
+- Holz wird nicht mehr direkt beim Fällen gegeben, sondern über die Drops
+
+### Setzling-System (`sapling.gd`)
+- Aufgesammelter Setzling kommt ins Inventar (HUD zeigt Anzahl)
+- **F-Taste** oder Pflanz-Button: Setzling 2m vor dem Spieler einpflanzen
+- **3 Wachstumsphasen** über 120 Sekunden:
+  - Phase 1 (0-30%): Kleiner grüner Trieb wächst
+  - Phase 2 (30-100%): Stamm und Krone erscheinen und werden größer
+  - Ausgewachsen: Wird zu vollem tree_resource-Baum (fällbar!)
+- Setzling-Mesh: Kleiner Topf mit grünem Trieb und Blatt
+
+### Realistischere Hack-Animation
+- **Beide Arme** greifen die Axt (nicht nur rechter Arm)
+- **3-Phasen-Schwung:**
+  - Ausholen: Arme nach hinten über den Kopf, Körper lehnt zurück
+  - Zuschlagen: Schneller Schwung nach vorne/unten mit Ease-out
+  - Nachschwung: Sanftes Zurückkehren zur Normalposition
+- **Körperbewegung:** Rumpf lehnt sich vor/zurück und dreht sich seitlich
+- **Kopf:** Folgt der Körperbewegung leicht verzögert
+- Dauer verlängert auf 0.55s für realistischeren Look

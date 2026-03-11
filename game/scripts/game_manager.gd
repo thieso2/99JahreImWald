@@ -22,6 +22,8 @@ extends Node3D
 @onready var joystick: Control = $HUD/TouchJoystick
 @onready var harvest_button: Button = $HUD/HarvestButton
 @onready var axe_button: Button = $HUD/AxeButton
+@onready var sapling_label: Label = $HUD/SaplingLabel
+@onready var plant_button: Button = $HUD/PlantButton
 
 var message_timer: float = 0.0
 var deer_active: bool = false
@@ -44,6 +46,8 @@ func _ready() -> void:
 	craft_button.pressed.connect(_on_craft_pressed)
 	harvest_button.pressed.connect(_on_harvest_pressed)
 	axe_button.pressed.connect(_on_axe_toggle_pressed)
+	plant_button.pressed.connect(_on_plant_pressed)
+	player.sapling_changed.connect(_on_sapling_changed)
 
 	# Kamera-Controller mit Spieler verbinden
 	camera_controller.target = player
@@ -59,6 +63,9 @@ func _ready() -> void:
 	message_label.text = ""
 	craft_button.text = "Fackel bauen (3 Holz)"
 	axe_button.text = "Axt ziehen"
+	sapling_label.text = "Setzlinge: 0"
+	plant_button.text = "Setzling pflanzen"
+	plant_button.visible = false
 
 	_show_message("Willkommen im Wald! Drücke 'Axt ziehen' und hacke Bäume!")
 
@@ -68,6 +75,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_harvest_pressed()
 	elif event.is_action_pressed("action_toggle_axe"):
 		_on_axe_toggle_pressed()
+	elif event.is_action_pressed("action_plant"):
+		_on_plant_pressed()
 
 
 func _process(delta: float) -> void:
@@ -148,7 +157,7 @@ func _on_harvest_pressed() -> void:
 		var result: Dictionary = player.try_chop_tree()
 		if result.chopped:
 			if result.felled:
-				_show_message("Baum gefällt! +%d Holz!" % result.wood, 2.0)
+				_show_message("Baum gefällt! Sammle die Holzscheite auf!", 2.0)
 			else:
 				_show_message("Hack!", 0.5)
 		else:
@@ -158,6 +167,18 @@ func _on_harvest_pressed() -> void:
 				_show_message("Kein Baum in Reichweite.", 1.5)
 	else:
 		_show_message("Ziehe zuerst deine Axt!", 1.5)
+
+
+func _on_sapling_changed(new_count: int) -> void:
+	sapling_label.text = "Setzlinge: %d" % new_count
+	plant_button.visible = new_count > 0
+
+
+func _on_plant_pressed() -> void:
+	if player.plant_sapling():
+		_show_message("Setzling gepflanzt! Er wird langsam wachsen.", 2.0)
+	else:
+		_show_message("Keine Setzlinge vorhanden.", 1.5)
 
 
 func _on_axe_toggle_pressed() -> void:

@@ -33,7 +33,7 @@ var axe_script: GDScript = null
 # Hack-Animation
 var is_chopping: bool = false
 var chop_cycle: float = 0.0
-var chop_duration: float = 0.4
+var chop_duration: float = 0.55  # Länger für realistischeren Schwung
 
 # Materialien
 var skin_mat: StandardMaterial3D
@@ -346,18 +346,48 @@ func play_chop() -> void:
 
 
 func _animate_chop() -> void:
-	if not right_arm_pivot:
+	if not right_arm_pivot or not left_arm_pivot:
 		return
-	# t geht von 0 bis 1 über die Hack-Dauer
+
 	var t: float = chop_cycle / chop_duration
-	# Schneller Schwung nach vorne/unten: hoch -> runter
-	var chop_angle: float
-	if t < 0.3:
-		# Ausholen (nach hinten)
-		chop_angle = lerp(0.0, -70.0, t / 0.3)
+
+	# Beide Arme greifen die Axt – realistischer Holzfäller-Schwung
+	var right_angle: float
+	var left_angle: float
+	var body_lean: float
+	var body_twist: float
+
+	if t < 0.25:
+		# Phase 1: Ausholen – Arme nach hinten über den Kopf
+		var ease_t: float = t / 0.25
+		ease_t = ease_t * ease_t  # Ease-in
+		right_angle = lerp(0.0, -120.0, ease_t)
+		left_angle = lerp(0.0, -100.0, ease_t)
+		body_lean = lerp(0.0, 0.1, ease_t)  # Leicht nach hinten lehnen
+		body_twist = lerp(0.0, -0.15, ease_t)  # Körper dreht sich zum Ausholen
+	elif t < 0.5:
+		# Phase 2: Zuschlagen – schneller Schwung nach vorne/unten
+		var ease_t: float = (t - 0.25) / 0.25
+		ease_t = 1.0 - (1.0 - ease_t) * (1.0 - ease_t)  # Ease-out (schnell)
+		right_angle = lerp(-120.0, 45.0, ease_t)
+		left_angle = lerp(-100.0, 35.0, ease_t)
+		body_lean = lerp(0.1, -0.25, ease_t)  # Nach vorne lehnen beim Zuschlag
+		body_twist = lerp(-0.15, 0.1, ease_t)  # Körper dreht mit
 	else:
-		# Zuschlagen (nach vorne/unten)
-		chop_angle = lerp(-70.0, 30.0, (t - 0.3) / 0.7)
-	right_arm_pivot.rotation_degrees.x = chop_angle
-	# Körper neigt sich leicht vor
-	body.rotation.x = -t * 0.1 * (1.0 - t)
+		# Phase 3: Nachschwung + Zurückkehren
+		var ease_t: float = (t - 0.5) / 0.5
+		right_angle = lerp(45.0, 0.0, ease_t)
+		left_angle = lerp(35.0, 0.0, ease_t)
+		body_lean = lerp(-0.25, 0.0, ease_t)
+		body_twist = lerp(0.1, 0.0, ease_t)
+
+	right_arm_pivot.rotation_degrees.x = right_angle
+	left_arm_pivot.rotation_degrees.x = left_angle
+
+	# Körper neigt sich nach vorne/hinten beim Schwung
+	body.rotation.x = body_lean
+	head.rotation.x = body_lean * 0.5
+
+	# Körper dreht sich leicht seitlich (wie ein echter Holzfäller)
+	body.rotation.y = body_twist
+	head.rotation.y = body_twist * 0.3
