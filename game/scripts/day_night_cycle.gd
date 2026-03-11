@@ -17,9 +17,9 @@ var total_cycle_duration: float = 0.0
 # Farben
 var day_sky_color := Color(0.55, 0.72, 0.92)
 var sunset_sky_color := Color(0.95, 0.5, 0.3)
-var night_sky_color := Color(0.05, 0.05, 0.15)
+var night_sky_color := Color(0.1, 0.1, 0.25)
 var day_light_color := Color(1.0, 0.97, 0.9)
-var night_light_color := Color(0.15, 0.15, 0.3)
+var night_light_color := Color(0.25, 0.25, 0.45)
 
 # Signale
 signal time_changed(time: float, day: int)
@@ -71,18 +71,18 @@ func _process(delta: float) -> void:
 		elif current_time < 0.5:
 			# Sonnenuntergang -> Nacht
 			var t := (current_time - 0.35) / 0.15
-			light_intensity = lerp(0.3, 0.05, t)
+			light_intensity = lerp(0.3, 0.15, t)
 			light_color = sunset_sky_color.lerp(night_light_color, t)
 			sky_color = sunset_sky_color.lerp(night_sky_color, t)
 		elif current_time < 0.75:
 			# Nacht
-			light_intensity = 0.05
+			light_intensity = 0.15
 			light_color = night_light_color
 			sky_color = night_sky_color
 		elif current_time < 0.85:
 			# Nacht -> Morgendämmerung
 			var t := (current_time - 0.75) / 0.1
-			light_intensity = lerp(0.05, 0.3, t)
+			light_intensity = lerp(0.15, 0.3, t)
 			light_color = night_light_color.lerp(sunset_sky_color, t)
 			sky_color = night_sky_color.lerp(sunset_sky_color, t)
 		else:
@@ -98,7 +98,7 @@ func _process(delta: float) -> void:
 		# Umgebungslicht anpassen
 		if environment and environment.environment:
 			environment.environment.ambient_light_color = sky_color
-			environment.environment.ambient_light_energy = light_intensity * 0.5
+			environment.environment.ambient_light_energy = light_intensity * 0.7
 
 	time_changed.emit(current_time, current_day)
 
