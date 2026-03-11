@@ -77,6 +77,7 @@ func _generate_forest() -> void:
 		var tree := _create_tree(rng)
 		tree.position = pos
 		var s := rng.randf_range(tree_scale_min, tree_scale_max)
+		tree.tree_scale_factor = s
 		tree.scale = Vector3(s, s, s)
 		# Leichte zufällige Rotation für natürlicheren Look
 		tree.rotation.y = rng.randf() * TAU

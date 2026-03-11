@@ -26,6 +26,15 @@ var is_walking: bool = false
 @export var body_bob_amount: float = 0.06
 @export var head_bob_amount: float = 0.03
 
+# Axt
+var axe_node: Node3D = null
+var axe_script: GDScript = null
+
+# Hack-Animation
+var is_chopping: bool = false
+var chop_cycle: float = 0.0
+var chop_duration: float = 0.4
+
 # Materialien
 var skin_mat: StandardMaterial3D
 var shirt_mat: StandardMaterial3D
@@ -38,18 +47,29 @@ var hair_mat: StandardMaterial3D
 
 
 func _ready() -> void:
+	axe_script = preload("res://scripts/axe_item.gd")
 	_create_materials()
 	_build_body()
 
 
 func _process(delta: float) -> void:
+	# Hack-Animation hat Priorität für den rechten Arm
+	if is_chopping:
+		chop_cycle += delta
+		if chop_cycle >= chop_duration:
+			is_chopping = false
+			chop_cycle = 0.0
+
 	if is_walking:
 		walk_cycle += delta * walk_anim_speed
 		_animate_walk()
 	else:
-		# Sanft zur Ruheposition zurückkehren
 		walk_cycle = 0.0
 		_animate_idle(delta)
+
+	# Hack-Animation überschreibt rechten Arm
+	if is_chopping:
+		_animate_chop()
 
 
 func set_walking(walking: bool) -> void:
@@ -301,3 +321,43 @@ func _animate_idle(delta: float) -> void:
 	# Leichte Atem-Animation im Idle
 	var breath: float = sin(Time.get_ticks_msec() * 0.003) * 0.01
 	body.position.y += breath
+
+
+func equip_axe(tier: int) -> void:
+	unequip_axe()
+	axe_node = Node3D.new()
+	axe_node.set_script(axe_script)
+	axe_node.tier = tier
+	axe_node.name = "AxeItem"
+	# Axt in der rechten Hand positionieren
+	axe_node.position = Vector3(0, -0.38, 0.08)
+	right_arm_pivot.add_child(axe_node)
+
+
+func unequip_axe() -> void:
+	if axe_node and is_instance_valid(axe_node):
+		axe_node.queue_free()
+		axe_node = null
+
+
+func play_chop() -> void:
+	is_chopping = true
+	chop_cycle = 0.0
+
+
+func _animate_chop() -> void:
+	if not right_arm_pivot:
+		return
+	# t geht von 0 bis 1 über die Hack-Dauer
+	var t: float = chop_cycle / chop_duration
+	# Schneller Schwung nach vorne/unten: hoch -> runter
+	var chop_angle: float
+	if t < 0.3:
+		# Ausholen (nach hinten)
+		chop_angle = lerp(0.0, -70.0, t / 0.3)
+	else:
+		# Zuschlagen (nach vorne/unten)
+		chop_angle = lerp(-70.0, 30.0, (t - 0.3) / 0.7)
+	right_arm_pivot.rotation_degrees.x = chop_angle
+	# Körper neigt sich leicht vor
+	body.rotation.x = -t * 0.1 * (1.0 - t)

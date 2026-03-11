@@ -242,8 +242,20 @@ offset_left = -220.0
 offset_top = -180.0
 offset_right = -20.0
 offset_bottom = -130.0
-text = "Holz sammeln"
+text = "Baum hacken"
 visible = false
+
+[node name="AxeButton" type="Button" parent="HUD"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -240.0
+offset_right = -20.0
+offset_bottom = -190.0
+text = "Axt ziehen"
 
 [node name="TouchJoystick" type="Control" parent="HUD"]
 anchors_preset = 2

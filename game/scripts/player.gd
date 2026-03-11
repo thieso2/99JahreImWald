@@ -14,6 +14,12 @@ var has_torch: bool = false
 var is_near_campfire: bool = false
 var is_safe: bool = false
 
+# Axt-System
+var has_axe: bool = false
+var axe_tier: int = 0         # 0=Stein, 1=Eisen, 2=Stahl
+var axe_active: bool = false  # Axt gezückt?
+var chop_cooldown: float = 0.0
+
 # Touch-Steuerung
 var joystick_direction: Vector2 = Vector2.ZERO
 
@@ -30,6 +36,7 @@ signal wood_changed(new_count: int)
 signal player_died()
 signal entered_safe_zone()
 signal left_safe_zone()
+signal axe_changed(active: bool)
 
 
 func _ready() -> void:
@@ -51,6 +58,10 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# Axt-Cooldown
+	if chop_cooldown > 0:
+		chop_cooldown -= delta
+
 	# Schwerkraft
 	if not is_on_floor():
 		velocity.y -= 9.8 * delta
@@ -162,3 +173,86 @@ func _on_safe_zone_exited() -> void:
 	is_safe = false
 	is_near_campfire = false
 	left_safe_zone.emit()
+
+
+func give_axe(tier: int) -> void:
+	has_axe = true
+	axe_tier = tier
+	if axe_active and player_model:
+		player_model.equip_axe(tier)
+
+
+func toggle_axe() -> void:
+	if not has_axe:
+		return
+	axe_active = not axe_active
+	if player_model:
+		if axe_active:
+			player_model.equip_axe(axe_tier)
+		else:
+			player_model.unequip_axe()
+	axe_changed.emit(axe_active)
+
+
+func get_axe_strength() -> float:
+	match axe_tier:
+		0: return 1.0
+		1: return 2.5
+		2: return 5.0
+	return 1.0
+
+
+func get_chop_cooldown_time() -> float:
+	match axe_tier:
+		0: return 1.0
+		1: return 0.7
+		2: return 0.45
+	return 1.0
+
+
+func try_chop_tree() -> Dictionary:
+	# Gibt {"chopped": bool, "felled": bool, "wood": int, "tree": Node} zurück
+	var result := {"chopped": false, "felled": false, "wood": 0, "tree": null}
+
+	if not axe_active or chop_cooldown > 0:
+		return result
+
+	# Nächsten Baum in Reichweite finden
+	var trees: Array = get_tree().get_nodes_in_group("tree")
+	var nearest_tree: Node = null
+	var nearest_dist: float = 999.0
+
+	for tree in trees:
+		if tree.has_method("chop") and not tree.is_harvested:
+			var dist: float = global_position.distance_to(tree.global_position)
+			if dist < 4.0 and dist < nearest_dist:
+				nearest_dist = dist
+				nearest_tree = tree
+
+	if nearest_tree == null:
+		return result
+
+	# Hacken!
+	chop_cooldown = get_chop_cooldown_time()
+
+	# Animation abspielen
+	if player_model:
+		player_model.play_chop()
+
+	# Spieler zum Baum drehen
+	var dir_to_tree: Vector3 = nearest_tree.global_position - global_position
+	dir_to_tree.y = 0
+	if dir_to_tree.length() > 0.1:
+		var target_rot: float = atan2(dir_to_tree.x, dir_to_tree.z)
+		rotation.y = target_rot
+
+	var felled: bool = nearest_tree.chop(get_axe_strength())
+	result.chopped = true
+	result.tree = nearest_tree
+
+	if felled:
+		result.felled = true
+		result.wood = nearest_tree.wood_amount
+		add_wood(nearest_tree.wood_amount)
+
+	return result

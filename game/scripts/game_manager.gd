@@ -21,6 +21,7 @@ extends Node3D
 @onready var craft_button: Button = $HUD/CraftButton
 @onready var joystick: Control = $HUD/TouchJoystick
 @onready var harvest_button: Button = $HUD/HarvestButton
+@onready var axe_button: Button = $HUD/AxeButton
 
 var message_timer: float = 0.0
 var deer_active: bool = false
@@ -42,9 +43,13 @@ func _ready() -> void:
 
 	craft_button.pressed.connect(_on_craft_pressed)
 	harvest_button.pressed.connect(_on_harvest_pressed)
+	axe_button.pressed.connect(_on_axe_toggle_pressed)
 
 	# Kamera-Controller mit Spieler verbinden
 	camera_controller.target = player
+
+	# Spieler bekommt zum Start eine Steinaxt
+	player.give_axe(0)
 
 	# UI initialisieren
 	_update_hp_bar(player.max_hp)
@@ -53,8 +58,16 @@ func _ready() -> void:
 	time_label.text = "Morgen"
 	message_label.text = ""
 	craft_button.text = "Fackel bauen (3 Holz)"
+	axe_button.text = "Axt ziehen"
 
-	_show_message("Willkommen im Wald! Sammle Holz und überlebe die Nacht!")
+	_show_message("Willkommen im Wald! Drücke 'Axt ziehen' und hacke Bäume!")
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("action_chop"):
+		_on_harvest_pressed()
+	elif event.is_action_pressed("action_toggle_axe"):
+		_on_axe_toggle_pressed()
 
 
 func _process(delta: float) -> void:
@@ -130,23 +143,38 @@ func _on_craft_pressed() -> void:
 
 
 func _on_harvest_pressed() -> void:
-	# Nächsten Baum in Reichweite finden und ernten
-	var trees := get_tree().get_nodes_in_group("tree")
-	for tree in trees:
-		if tree.has_method("harvest"):
-			var distance: float = player.global_position.distance_to(tree.global_position)
-			if distance < 4.0 and not tree.is_harvested:
-				tree.harvest(player)
-				_show_message("+%d Holz!" % tree.wood_amount, 1.0)
-				return
-	_show_message("Kein Baum in Reichweite.", 1.5)
+	if player.axe_active:
+		# Mit Axt: Baum hacken (mehrere Hiebe nötig)
+		var result: Dictionary = player.try_chop_tree()
+		if result.chopped:
+			if result.felled:
+				_show_message("Baum gefällt! +%d Holz!" % result.wood, 2.0)
+			else:
+				_show_message("Hack!", 0.5)
+		else:
+			if player.chop_cooldown > 0:
+				pass  # Cooldown, keine Nachricht
+			else:
+				_show_message("Kein Baum in Reichweite.", 1.5)
+	else:
+		_show_message("Ziehe zuerst deine Axt!", 1.5)
+
+
+func _on_axe_toggle_pressed() -> void:
+	player.toggle_axe()
+	if player.axe_active:
+		axe_button.text = "Axt wegstecken"
+		harvest_button.text = "Baum hacken"
+	else:
+		axe_button.text = "Axt ziehen"
+		harvest_button.text = "Holz sammeln"
 
 
 func _update_harvest_button() -> void:
 	var near_tree := false
 	var trees := get_tree().get_nodes_in_group("tree")
 	for tree in trees:
-		if tree.has_method("harvest") and not tree.is_harvested:
+		if tree.has_method("chop") and not tree.is_harvested:
 			var distance: float = player.global_position.distance_to(tree.global_position)
 			if distance < 5.0:
 				near_tree = true

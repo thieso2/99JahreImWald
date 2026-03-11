@@ -203,3 +203,31 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 ### Spieler-Look angepasst (`player_model.gd`)
 - **Kleidung:** Dunkles T-Shirt + dunkle Jeans (wie im Roblox-Vorbild statt grünem Hemd)
 - **Haare:** Heller orangebraun (wie im Screenshot)
+
+---
+
+## 2026-03-11 – Axt-System implementiert
+
+### Neues Feature: Axt mit Stufen
+- **Drei Axt-Stufen:** Stein (Stärke 1, 1s Cooldown), Eisen (Stärke 2.5, 0.7s), Stahl (Stärke 5, 0.45s)
+- **Prozedurales Axt-Modell:** Brauner Stiel + Klinge (Farbe je nach Stufe: grau/silber/dunkelstahl)
+- **Sichtbar in der Hand:** Axt wird am rechten Arm-Pivot befestigt, bewegt sich mit Geh- und Hack-Animation
+
+### Baum-HP-System
+- **Kleine Bäume (Scale < 0.9):** 2 HP, 1 Holz → 2 Hiebe mit Steinaxt
+- **Mittlere Bäume (Scale 0.9-1.1):** 4 HP, 2 Holz → 4 Hiebe mit Steinaxt
+- **Große Bäume (Scale > 1.1):** 8 HP, 4 Holz → 8 Hiebe mit Steinaxt, nur 2 mit Stahlaxt
+- **Shake-Effekt:** Bäume wackeln bei jedem Hieb
+- Bäume respawnen weiterhin nach 30s
+
+### Hack-Animation
+- **Aushol-Bewegung:** Rechter Arm schwingt nach hinten (30% der Animation)
+- **Zuschlag:** Arm schwingt schnell nach vorne/unten (70% der Animation)
+- **Körperneigung:** Leichter Vorwärtslean beim Hacken
+- Spieler dreht sich automatisch zum Baum beim Hacken
+
+### Steuerung
+- **Q-Taste:** Axt ziehen / wegstecken (Toggle)
+- **E-Taste:** Baum hacken (wenn Axt gezückt und Baum in Reichweite)
+- **HUD-Buttons:** "Axt ziehen/wegstecken" und "Baum hacken" (unten rechts)
+- Spieler bekommt beim Start eine Steinaxt
