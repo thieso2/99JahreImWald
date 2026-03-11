@@ -15,10 +15,10 @@ var total_cycle_duration: float = 0.0
 @onready var environment: WorldEnvironment = $WorldEnvironment
 
 # Farben
-var day_sky_color := Color(0.45, 0.65, 0.95)
+var day_sky_color := Color(0.55, 0.72, 0.92)
 var sunset_sky_color := Color(0.95, 0.5, 0.3)
 var night_sky_color := Color(0.05, 0.05, 0.15)
-var day_light_color := Color(1.0, 0.95, 0.85)
+var day_light_color := Color(1.0, 0.97, 0.9)
 var night_light_color := Color(0.15, 0.15, 0.3)
 
 # Signale

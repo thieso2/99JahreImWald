@@ -172,3 +172,34 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - Tiefpassfilter statt Sinuswellen → natürlicheres Klangbild
 - Längere Dauer (0.06-0.22s) für realistischeres Ausklingen
 - Leiserer Gesamtpegel (-10 dB statt -8 dB)
+
+---
+
+## 2026-03-11 – Grafik-Überarbeitung (Roblox-Vorbild)
+
+### Analyse
+- Screenshot von "99 Nights in the Forest" (Roblox) als Referenz
+- Identifizierte Unterschiede: Bäume zu dünn/klein, Boden zu dunkel, Lagerfeuer zu simpel, keine Dekoration
+
+### Bäume komplett überarbeitet (`forest_generator.gd`)
+- **Stämme:** Radius verdoppelt (0.3-0.6 statt 0.1-0.28), Höhe verdoppelt (5-8m statt 2-3.5m)
+- **Kronen:** Breiter (2.0-3.5 statt 1.2-2.2), flacher (1.2x Höhe statt 2x) für Roblox-Look
+- **Farben:** Dunklere Grüntöne für die Kronen, dunklerer Stamm
+- **Abstände:** Vergrößert auf 4.5m zwischen Bäumen, 10m Lichtung um Camp
+
+### Lagerfeuer neu gestaltet (`campfire.gd`)
+- **Steinkreis:** 8 Steine um die Feuerstelle
+- **Holzscheite:** 3 Scheite im Feuer (übereinander), 4 verstreut drumherum
+- **Glühende Basis:** Leuchtender Ember-Ring unter dem Feuer
+- **Felsblock:** Große dunkelgraue Steinplattform mit zwei Stufen (wie im Vorbild)
+
+### Beleuchtung & Umgebung
+- **Boden:** Helleres, satteres Grün (0.25, 0.55, 0.15 statt 0.15, 0.35, 0.1)
+- **Sonnenlicht:** Heller (Energy 1.2 statt 0.8), wärmerer Ton
+- **Umgebungslicht:** Stärker (Energy 0.6 statt 0.4)
+- **Nebel:** Leicht dichter (0.012 statt 0.008) für Wald-Tiefe
+- **Himmel:** Hellere, freundlichere Farben am Tag
+
+### Spieler-Look angepasst (`player_model.gd`)
+- **Kleidung:** Dunkles T-Shirt + dunkle Jeans (wie im Roblox-Vorbild statt grünem Hemd)
+- **Haare:** Heller orangebraun (wie im Screenshot)

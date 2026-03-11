@@ -61,17 +61,17 @@ func _create_materials() -> void:
 	skin_mat = StandardMaterial3D.new()
 	skin_mat.albedo_color = Color(0.9, 0.75, 0.6, 1)
 
-	# Hemd (grünes Outdoor-Hemd)
+	# Hemd (dunkles T-Shirt wie im Roblox-Vorbild)
 	shirt_mat = StandardMaterial3D.new()
-	shirt_mat.albedo_color = Color(0.2, 0.45, 0.25, 1)
+	shirt_mat.albedo_color = Color(0.12, 0.12, 0.12, 1)
 
-	# Hose (braun)
+	# Hose (dunkle Jeans)
 	pants_mat = StandardMaterial3D.new()
-	pants_mat.albedo_color = Color(0.35, 0.25, 0.15, 1)
+	pants_mat.albedo_color = Color(0.15, 0.15, 0.18, 1)
 
-	# Schuhe (dunkelbraun)
+	# Schuhe (dunkelgrau)
 	shoe_mat = StandardMaterial3D.new()
-	shoe_mat.albedo_color = Color(0.25, 0.15, 0.1, 1)
+	shoe_mat.albedo_color = Color(0.2, 0.18, 0.15, 1)
 
 	# Augen
 	eye_white_mat = StandardMaterial3D.new()
@@ -86,7 +86,7 @@ func _create_materials() -> void:
 
 	# Haare
 	hair_mat = StandardMaterial3D.new()
-	hair_mat.albedo_color = Color(0.3, 0.2, 0.1, 1)
+	hair_mat.albedo_color = Color(0.6, 0.35, 0.15, 1)
 
 
 func _build_body() -> void:

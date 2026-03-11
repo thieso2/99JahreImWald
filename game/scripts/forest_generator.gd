@@ -4,8 +4,8 @@ extends Node3D
 
 @export var tree_count: int = 300
 @export var forest_radius: float = 80.0
-@export var min_distance_from_camp: float = 6.0
-@export var min_distance_between_trees: float = 3.0
+@export var min_distance_from_camp: float = 10.0
+@export var min_distance_between_trees: float = 4.5
 @export var tree_scale_min: float = 0.7
 @export var tree_scale_max: float = 1.4
 
@@ -23,15 +23,15 @@ var placed_positions: Array[Vector3] = []
 func _ready() -> void:
 	# Materialien vorbereiten
 	trunk_material = StandardMaterial3D.new()
-	trunk_material.albedo_color = Color(0.4, 0.25, 0.15, 1)
+	trunk_material.albedo_color = Color(0.35, 0.22, 0.12, 1)
 
-	# Verschiedene Grüntöne für Variation
+	# Verschiedene dunkle Grüntöne für Variation (wie im Roblox-Vorbild)
 	var green_colors := [
-		Color(0.1, 0.45, 0.15, 1),
-		Color(0.15, 0.5, 0.12, 1),
-		Color(0.08, 0.38, 0.18, 1),
-		Color(0.12, 0.42, 0.1, 1),
-		Color(0.18, 0.52, 0.15, 1),
+		Color(0.08, 0.32, 0.1, 1),
+		Color(0.1, 0.36, 0.08, 1),
+		Color(0.06, 0.28, 0.12, 1),
+		Color(0.09, 0.3, 0.07, 1),
+		Color(0.12, 0.34, 0.1, 1),
 	]
 	for color in green_colors:
 		var mat := StandardMaterial3D.new()
@@ -91,34 +91,34 @@ func _create_tree(rng: RandomNumberGenerator) -> StaticBody3D:
 	tree.add_to_group("tree")
 	tree.set_script(tree_script)
 
-	# Stamm
+	# Stamm – dick und hoch wie im Roblox-Vorbild
 	var trunk_mesh_instance := MeshInstance3D.new()
 	trunk_mesh_instance.name = "MeshInstance3D"
 	var trunk_mesh := CylinderMesh.new()
-	trunk_mesh.top_radius = rng.randf_range(0.1, 0.18)
-	trunk_mesh.bottom_radius = rng.randf_range(0.18, 0.28)
-	trunk_mesh.height = rng.randf_range(2.0, 3.5)
+	trunk_mesh.top_radius = rng.randf_range(0.3, 0.45)
+	trunk_mesh.bottom_radius = rng.randf_range(0.4, 0.6)
+	trunk_mesh.height = rng.randf_range(5.0, 8.0)
 	trunk_mesh_instance.mesh = trunk_mesh
 	trunk_mesh_instance.material_override = trunk_material
 	trunk_mesh_instance.position.y = trunk_mesh.height / 2.0
 	tree.add_child(trunk_mesh_instance)
 
-	# Blätterkrone
+	# Blätterkrone – breiter und flacher (wie im Roblox-Vorbild)
 	var leaves_mesh_instance := MeshInstance3D.new()
 	leaves_mesh_instance.name = "Leaves"
 	var leaves_mesh := SphereMesh.new()
-	var crown_radius := rng.randf_range(1.2, 2.2)
+	var crown_radius := rng.randf_range(2.0, 3.5)
 	leaves_mesh.radius = crown_radius
-	leaves_mesh.height = crown_radius * 2.0
+	leaves_mesh.height = crown_radius * 1.2  # Flacher als eine Kugel
 	leaves_mesh_instance.mesh = leaves_mesh
 	leaves_mesh_instance.material_override = leaves_materials[rng.randi() % leaves_materials.size()]
-	leaves_mesh_instance.position.y = trunk_mesh.height + crown_radius * 0.6
+	leaves_mesh_instance.position.y = trunk_mesh.height + crown_radius * 0.3
 	tree.add_child(leaves_mesh_instance)
 
 	# Kollision (Stamm)
 	var collision := CollisionShape3D.new()
 	var col_shape := CylinderShape3D.new()
-	col_shape.radius = 0.3
+	col_shape.radius = trunk_mesh.bottom_radius + 0.1
 	col_shape.height = trunk_mesh.height
 	collision.shape = col_shape
 	collision.position.y = trunk_mesh.height / 2.0
