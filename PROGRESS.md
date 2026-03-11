@@ -155,3 +155,20 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - **WASD:** Alternative Bewegung
 - **+/-:** Zoom
 - Roblox-Verhalten: Kamera orbitet frei um Spieler, Spieler dreht erst bei Bewegung
+
+---
+
+## 2026-03-11 – Schrittgeräusche überarbeitet
+
+### Problem
+- Schrittgeräusche klangen wie Baugeräusche/Hämmern statt wie Laufen im Wald
+- Ursache: zu hohe Frequenzen (800-3500 Hz), zu kurze Dauer (0.03-0.16s), Sinus-basiert → mechanisch/metallisch
+
+### Lösung: Komplett neues Sound-Design
+- **Laub rascheln (55%):** Doppelt tiefpassgefiltertes Rauschen mit Raschel-Modulation, weich und natürlich
+- **Weiche Erde (30%):** Sehr stark gefiltert + tiefe Resonanz (140 Hz), dumpfer Aufprall
+- **Zweig knacken (15%):** Kurzer breitbandiger Knack mit leise nachklingendem Rauschen
+- Alle Sounds: weiche Attack/Decay-Envelope statt harter Impulse
+- Tiefpassfilter statt Sinuswellen → natürlicheres Klangbild
+- Längere Dauer (0.06-0.22s) für realistischeres Ausklingen
+- Leiserer Gesamtpegel (-10 dB statt -8 dB)
