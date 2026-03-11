@@ -4,6 +4,7 @@ extends CharacterBody3D
 @export var speed: float = 5.0
 @export var sprint_speed: float = 8.0
 @export var max_hp: float = 100.0
+@export var rotation_speed: float = 3.0
 
 # Zustand
 var hp: float = 100.0
@@ -16,9 +17,12 @@ var is_safe: bool = false
 # Touch-Steuerung
 var joystick_direction: Vector2 = Vector2.ZERO
 
-# Kamera
-@onready var camera_pivot: Node3D = $CameraPivot
-@onready var camera: Camera3D = $CameraPivot/Camera3D
+# Kamera-Yaw für richtungsrelative Bewegung
+var camera_yaw: float = 0.0
+
+# Modell & Sound
+var player_model: Node3D = null
+var footsteps: Node = null
 
 # Signale
 signal hp_changed(new_hp: float)
@@ -31,56 +35,68 @@ signal left_safe_zone()
 func _ready() -> void:
 	hp = max_hp
 
+	# Spieler-Modell erstellen
+	var model_script: GDScript = preload("res://scripts/player_model.gd")
+	player_model = Node3D.new()
+	player_model.set_script(model_script)
+	player_model.name = "PlayerModel"
+	add_child(player_model)
+
+	# Schrittgeräusche erstellen
+	var footstep_script: GDScript = preload("res://scripts/footstep_sounds.gd")
+	footsteps = Node.new()
+	footsteps.set_script(footstep_script)
+	footsteps.name = "FootstepSounds"
+	add_child(footsteps)
+
 
 func _physics_process(delta: float) -> void:
 	# Schwerkraft
 	if not is_on_floor():
 		velocity.y -= 9.8 * delta
 
-	# Bewegung aus Joystick-Input
-	var direction := Vector3.ZERO
-	if joystick_direction.length() > 0.1:
-		# Bewegung relativ zur Kamera
-		var cam_basis := camera.global_transform.basis
-		var forward := -cam_basis.z
-		forward.y = 0
-		forward = forward.normalized()
-		var right := cam_basis.x
-		right.y = 0
-		right = right.normalized()
+	# Input sammeln (Joystick oder Tastatur)
+	var input_dir := Vector2.ZERO
 
-		direction = (forward * -joystick_direction.y + right * joystick_direction.x).normalized()
+	if joystick_direction.length() > 0.1:
+		input_dir = joystick_direction
 
 	# Auch Tastatur-Input unterstützen (zum Testen am PC)
-	var kb_dir := Vector2.ZERO
-	if Input.is_action_pressed("move_forward"):
-		kb_dir.y -= 1
-	if Input.is_action_pressed("move_backward"):
-		kb_dir.y += 1
-	if Input.is_action_pressed("move_left"):
-		kb_dir.x -= 1
-	if Input.is_action_pressed("move_right"):
-		kb_dir.x += 1
+	if input_dir.length() < 0.1:
+		if Input.is_action_pressed("move_forward"):
+			input_dir.y -= 1
+		if Input.is_action_pressed("move_backward"):
+			input_dir.y += 1
+		if Input.is_action_pressed("move_left"):
+			input_dir.x -= 1
+		if Input.is_action_pressed("move_right"):
+			input_dir.x += 1
 
-	if kb_dir.length() > 0.1:
-		var cam_basis := camera.global_transform.basis
-		var forward := -cam_basis.z
-		forward.y = 0
-		forward = forward.normalized()
-		var right := cam_basis.x
-		right.y = 0
-		right = right.normalized()
-		direction = (forward * -kb_dir.y + right * kb_dir.x).normalized()
+	# Bewegungsrichtung relativ zur Kamera-Rotation berechnen
+	var direction := Vector3.ZERO
+	var walking := false
+	if input_dir.length() > 0.1:
+		input_dir = input_dir.normalized()
+		var yaw_rad: float = deg_to_rad(camera_yaw)
+		var forward := Vector3(-sin(yaw_rad), 0, -cos(yaw_rad))
+		var right := Vector3(cos(yaw_rad), 0, -sin(yaw_rad))
+		direction = (forward * -input_dir.y + right * input_dir.x).normalized()
+		walking = true
 
 	# Geschwindigkeit setzen
-	var current_speed := speed
-	velocity.x = direction.x * current_speed
-	velocity.z = direction.z * current_speed
+	velocity.x = direction.x * speed
+	velocity.z = direction.z * speed
 
-	# Spieler in Bewegungsrichtung drehen
+	# Spieler sanft in Bewegungsrichtung drehen
 	if direction.length() > 0.1:
 		var target_rotation := atan2(direction.x, direction.z)
-		rotation.y = lerp_angle(rotation.y, target_rotation, 10.0 * delta)
+		rotation.y = lerp_angle(rotation.y, target_rotation, rotation_speed * delta)
+
+	# Animation und Sound aktualisieren
+	if player_model:
+		player_model.set_walking(walking)
+	if footsteps:
+		footsteps.set_walking(walking)
 
 	move_and_slide()
 

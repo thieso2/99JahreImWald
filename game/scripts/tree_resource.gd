@@ -8,16 +8,21 @@ extends StaticBody3D
 var is_harvested: bool = false
 var respawn_timer: float = 0.0
 
-# Referenzen
-@onready var mesh: MeshInstance3D = $MeshInstance3D
-@onready var collision: CollisionShape3D = $CollisionShape3D
-@onready var interact_area: Area3D = $InteractArea
+# Referenzen (werden dynamisch gesucht)
+var trunk_mesh: MeshInstance3D = null
+var leaves_mesh: MeshInstance3D = null
+var collision: CollisionShape3D = null
 
 
 func _ready() -> void:
-	interact_area.body_entered.connect(_on_body_entered)
-	# Interaktionsbereich für Touch
-	interact_area.input_event.connect(_on_input_event)
+	# Nodes dynamisch finden statt @onready (funktioniert auch bei prozeduraler Erzeugung)
+	for child in get_children():
+		if child is MeshInstance3D and child.name == "MeshInstance3D":
+			trunk_mesh = child
+		elif child is MeshInstance3D and child.name == "Leaves":
+			leaves_mesh = child
+		elif child is CollisionShape3D:
+			collision = child
 
 
 func _process(delta: float) -> void:
@@ -39,27 +44,19 @@ func harvest(player: CharacterBody3D) -> void:
 		player.add_wood(wood_amount)
 
 	# Baum verstecken
-	mesh.visible = false
-	collision.disabled = true
+	if trunk_mesh:
+		trunk_mesh.visible = false
+	if leaves_mesh:
+		leaves_mesh.visible = false
+	if collision:
+		collision.disabled = true
 
 
 func _respawn() -> void:
 	is_harvested = false
-	mesh.visible = true
-	collision.disabled = false
-
-
-func _on_body_entered(body: Node3D) -> void:
-	pass  # Wird für Touch-Interaktion nicht gebraucht
-
-
-func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _normal: Vector3, _shape_idx: int) -> void:
-	if event is InputEventScreenTouch and event.pressed:
-		# Nächsten Spieler finden
-		var players := get_tree().get_nodes_in_group("player")
-		for p in players:
-			if p is CharacterBody3D:
-				var distance: float = global_position.distance_to(p.global_position)
-				if distance < 4.0:
-					harvest(p)
-					break
+	if trunk_mesh:
+		trunk_mesh.visible = true
+	if leaves_mesh:
+		leaves_mesh.visible = true
+	if collision:
+		collision.disabled = false

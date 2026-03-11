@@ -1,31 +1,19 @@
-[gd_scene load_steps=32 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="1_gm"]
 [ext_resource type="Script" path="res://scripts/player.gd" id="2_pl"]
 [ext_resource type="Script" path="res://scripts/day_night_cycle.gd" id="3_dn"]
 [ext_resource type="Script" path="res://scripts/deer_monster.gd" id="4_dm"]
 [ext_resource type="Script" path="res://scripts/campfire.gd" id="5_cf"]
-[ext_resource type="Script" path="res://scripts/tree_resource.gd" id="6_tr"]
 [ext_resource type="Script" path="res://scripts/touch_joystick.gd" id="7_tj"]
 [ext_resource type="Script" path="res://scripts/joystick_visual.gd" id="8_jv"]
+[ext_resource type="Script" path="res://scripts/forest_generator.gd" id="9_fg"]
+[ext_resource type="Script" path="res://scripts/camera_controller.gd" id="10_cc"]
+[ext_resource type="Script" path="res://scripts/ambient_music.gd" id="11_am"]
 
 [sub_resource type="CapsuleShape3D" id="player_shape"]
 radius = 0.4
 height = 1.8
-
-[sub_resource type="CapsuleMesh" id="player_mesh"]
-radius = 0.4
-height = 1.8
-
-[sub_resource type="StandardMaterial3D" id="player_mat"]
-albedo_color = Color(0.2, 0.6, 0.3, 1)
-
-[sub_resource type="SphereMesh" id="head_mesh"]
-radius = 0.3
-height = 0.6
-
-[sub_resource type="StandardMaterial3D" id="head_mat"]
-albedo_color = Color(0.85, 0.7, 0.55, 1)
 
 [sub_resource type="BoxShape3D" id="ground_shape"]
 size = Vector3(200, 0.2, 200)
@@ -35,28 +23,6 @@ size = Vector3(200, 0.2, 200)
 
 [sub_resource type="StandardMaterial3D" id="ground_mat"]
 albedo_color = Color(0.15, 0.35, 0.1, 1)
-
-[sub_resource type="CylinderMesh" id="trunk_mesh"]
-top_radius = 0.15
-bottom_radius = 0.2
-height = 2.5
-
-[sub_resource type="StandardMaterial3D" id="trunk_mat"]
-albedo_color = Color(0.4, 0.25, 0.15, 1)
-
-[sub_resource type="SphereMesh" id="leaves_mesh"]
-radius = 1.5
-height = 3.0
-
-[sub_resource type="StandardMaterial3D" id="leaves_mat"]
-albedo_color = Color(0.1, 0.45, 0.15, 1)
-
-[sub_resource type="CylinderShape3D" id="tree_shape"]
-radius = 0.3
-height = 2.5
-
-[sub_resource type="SphereShape3D" id="tree_interact_shape"]
-radius = 4.0
 
 [sub_resource type="CylinderMesh" id="campfire_mesh"]
 top_radius = 0.0
@@ -97,7 +63,7 @@ ambient_light_color = Color(0.45, 0.65, 0.95, 1)
 ambient_light_energy = 0.4
 fog_enabled = true
 fog_light_color = Color(0.6, 0.7, 0.8, 1)
-fog_density = 0.005
+fog_density = 0.008
 
 [sub_resource type="ParticleProcessMaterial" id="fire_particle_mat"]
 direction = Vector3(0, 1, 0)
@@ -143,21 +109,14 @@ script = ExtResource("2_pl")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("player_shape")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("player_mesh")
-surface_material_override/0 = SubResource("player_mat")
+[node name="CameraController" type="Node3D" parent="."]
+script = ExtResource("10_cc")
 
-[node name="Head" type="MeshInstance3D" parent="Player"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
-mesh = SubResource("head_mesh")
-surface_material_override/0 = SubResource("head_mat")
+[node name="Camera3D" type="Camera3D" parent="CameraController"]
+transform = Transform3D(1, 0, 0, 0, 0.82, 0.57, 0, -0.57, 0.82, 0, 12, 10)
 
-[node name="CameraPivot" type="Node3D" parent="Player"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-
-[node name="Camera3D" type="Camera3D" parent="Player/CameraPivot"]
-transform = Transform3D(1, 0, 0, 0, 0.94, 0.34, 0, -0.34, 0.94, 0, 5, 8)
+[node name="AmbientMusic" type="Node" parent="."]
+script = ExtResource("11_am")
 
 [node name="Campfire" type="StaticBody3D" parent="."]
 script = ExtResource("5_cf")
@@ -213,199 +172,8 @@ transform = Transform3D(0.7, -0.7, 0, 0.7, 0.7, 0, 0, 0, 1, 0.3, 2.5, 0)
 mesh = SubResource("antler_mesh")
 surface_material_override/0 = SubResource("antler_mat")
 
-[node name="Trees" type="Node3D" parent="."]
-
-[node name="Tree1" type="StaticBody3D" parent="Trees" groups=["tree"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -4)
-script = ExtResource("6_tr")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Trees/Tree1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-mesh = SubResource("trunk_mesh")
-surface_material_override/0 = SubResource("trunk_mat")
-
-[node name="Leaves" type="MeshInstance3D" parent="Trees/Tree1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-mesh = SubResource("leaves_mesh")
-surface_material_override/0 = SubResource("leaves_mat")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-shape = SubResource("tree_shape")
-
-[node name="InteractArea" type="Area3D" parent="Trees/Tree1"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree1/InteractArea"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("tree_interact_shape")
-
-[node name="Tree2" type="StaticBody3D" parent="Trees" groups=["tree"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -3)
-script = ExtResource("6_tr")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Trees/Tree2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-mesh = SubResource("trunk_mesh")
-surface_material_override/0 = SubResource("trunk_mat")
-
-[node name="Leaves" type="MeshInstance3D" parent="Trees/Tree2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-mesh = SubResource("leaves_mesh")
-surface_material_override/0 = SubResource("leaves_mat")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-shape = SubResource("tree_shape")
-
-[node name="InteractArea" type="Area3D" parent="Trees/Tree2"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree2/InteractArea"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("tree_interact_shape")
-
-[node name="Tree3" type="StaticBody3D" parent="Trees" groups=["tree"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 5)
-script = ExtResource("6_tr")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Trees/Tree3"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-mesh = SubResource("trunk_mesh")
-surface_material_override/0 = SubResource("trunk_mat")
-
-[node name="Leaves" type="MeshInstance3D" parent="Trees/Tree3"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-mesh = SubResource("leaves_mesh")
-surface_material_override/0 = SubResource("leaves_mat")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree3"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-shape = SubResource("tree_shape")
-
-[node name="InteractArea" type="Area3D" parent="Trees/Tree3"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree3/InteractArea"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("tree_interact_shape")
-
-[node name="Tree4" type="StaticBody3D" parent="Trees" groups=["tree"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 8)
-script = ExtResource("6_tr")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Trees/Tree4"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-mesh = SubResource("trunk_mesh")
-surface_material_override/0 = SubResource("trunk_mat")
-
-[node name="Leaves" type="MeshInstance3D" parent="Trees/Tree4"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-mesh = SubResource("leaves_mesh")
-surface_material_override/0 = SubResource("leaves_mat")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree4"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-shape = SubResource("tree_shape")
-
-[node name="InteractArea" type="Area3D" parent="Trees/Tree4"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree4/InteractArea"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("tree_interact_shape")
-
-[node name="Tree5" type="StaticBody3D" parent="Trees" groups=["tree"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -8)
-script = ExtResource("6_tr")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Trees/Tree5"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-mesh = SubResource("trunk_mesh")
-surface_material_override/0 = SubResource("trunk_mat")
-
-[node name="Leaves" type="MeshInstance3D" parent="Trees/Tree5"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-mesh = SubResource("leaves_mesh")
-surface_material_override/0 = SubResource("leaves_mat")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree5"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-shape = SubResource("tree_shape")
-
-[node name="InteractArea" type="Area3D" parent="Trees/Tree5"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree5/InteractArea"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("tree_interact_shape")
-
-[node name="Tree6" type="StaticBody3D" parent="Trees" groups=["tree"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, -9)
-script = ExtResource("6_tr")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Trees/Tree6"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-mesh = SubResource("trunk_mesh")
-surface_material_override/0 = SubResource("trunk_mat")
-
-[node name="Leaves" type="MeshInstance3D" parent="Trees/Tree6"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-mesh = SubResource("leaves_mesh")
-surface_material_override/0 = SubResource("leaves_mat")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree6"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-shape = SubResource("tree_shape")
-
-[node name="InteractArea" type="Area3D" parent="Trees/Tree6"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree6/InteractArea"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("tree_interact_shape")
-
-[node name="Tree7" type="StaticBody3D" parent="Trees" groups=["tree"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -12)
-script = ExtResource("6_tr")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Trees/Tree7"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-mesh = SubResource("trunk_mesh")
-surface_material_override/0 = SubResource("trunk_mat")
-
-[node name="Leaves" type="MeshInstance3D" parent="Trees/Tree7"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-mesh = SubResource("leaves_mesh")
-surface_material_override/0 = SubResource("leaves_mat")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree7"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-shape = SubResource("tree_shape")
-
-[node name="InteractArea" type="Area3D" parent="Trees/Tree7"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree7/InteractArea"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("tree_interact_shape")
-
-[node name="Tree8" type="StaticBody3D" parent="Trees" groups=["tree"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 14)
-script = ExtResource("6_tr")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Trees/Tree8"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-mesh = SubResource("trunk_mesh")
-surface_material_override/0 = SubResource("trunk_mat")
-
-[node name="Leaves" type="MeshInstance3D" parent="Trees/Tree8"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-mesh = SubResource("leaves_mesh")
-surface_material_override/0 = SubResource("leaves_mat")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree8"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-shape = SubResource("tree_shape")
-
-[node name="InteractArea" type="Area3D" parent="Trees/Tree8"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Trees/Tree8/InteractArea"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("tree_interact_shape")
+[node name="ForestGenerator" type="Node3D" parent="."]
+script = ExtResource("9_fg")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 

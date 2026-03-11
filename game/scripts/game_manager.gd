@@ -9,6 +9,7 @@ extends Node3D
 @onready var day_night: Node3D = $DayNightCycle
 @onready var deer: CharacterBody3D = $DeerMonster
 @onready var campfire: StaticBody3D = $Campfire
+@onready var camera_controller: Node3D = $CameraController
 @onready var hud: CanvasLayer = $HUD
 
 # UI-Referenzen
@@ -42,6 +43,9 @@ func _ready() -> void:
 	craft_button.pressed.connect(_on_craft_pressed)
 	harvest_button.pressed.connect(_on_harvest_pressed)
 
+	# Kamera-Controller mit Spieler verbinden
+	camera_controller.target = player
+
 	# UI initialisieren
 	_update_hp_bar(player.max_hp)
 	_update_wood_label(0)
@@ -54,6 +58,9 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	# Kamera-Yaw an Spieler weitergeben für richtungsrelative Bewegung
+	player.camera_yaw = camera_controller.get_camera_yaw()
+
 	# Nachricht ausblenden
 	if message_timer > 0:
 		message_timer -= delta
