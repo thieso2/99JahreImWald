@@ -59,7 +59,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	# Kamera-Yaw an Spieler weitergeben für richtungsrelative Bewegung
-	player.camera_yaw = camera_controller.get_camera_yaw()
+	player.camera_yaw = camera_controller.get_yaw()
 
 	# Nachricht ausblenden
 	if message_timer > 0:

@@ -64,32 +64,37 @@ func _physics_process(delta: float) -> void:
 	# Tastatur-Input (WASD)
 	if input_dir.length() < 0.1:
 		if Input.is_action_pressed("move_forward"):
-			input_dir.y -= 1
-		if Input.is_action_pressed("move_backward"):
 			input_dir.y += 1
+		if Input.is_action_pressed("move_backward"):
+			input_dir.y -= 1
 		if Input.is_action_pressed("move_left"):
 			input_dir.x -= 1
 		if Input.is_action_pressed("move_right"):
 			input_dir.x += 1
 
-	# Roblox-Style: Bewegung relativ zur Kamera
-	# W = vorwärts in Kamera-Blickrichtung, A/D = seitlich
+	# Roblox-Style Bewegung: relativ zur Kamera-Blickrichtung
+	# W = weg von der Kamera (vorwärts), S = zur Kamera (rückwärts)
+	# A = links von der Kamera, D = rechts von der Kamera
 	var direction := Vector3.ZERO
 	var walking := false
 	if input_dir.length() > 0.1:
 		input_dir = input_dir.normalized()
 		var yaw_rad: float = deg_to_rad(camera_yaw)
-		# Kamera-Vorwärts (horizontal, auf dem Boden)
-		var cam_forward := Vector3(sin(yaw_rad), 0, cos(yaw_rad))
-		var cam_right := Vector3(cos(yaw_rad), 0, -sin(yaw_rad))
-		direction = (cam_forward * input_dir.y + cam_right * input_dir.x).normalized()
+
+		# "Vorwärts" = Richtung von der Kamera weg zum Spieler
+		# Kamera ist bei -sin(yaw)*dist, cos(yaw)*dist
+		# Also ist "vorwärts" = sin(yaw), 0, -cos(yaw)
+		var forward := Vector3(sin(yaw_rad), 0, -cos(yaw_rad))
+		var right := Vector3(cos(yaw_rad), 0, sin(yaw_rad))
+
+		direction = (forward * input_dir.y + right * input_dir.x).normalized()
 		walking = true
 
 	# Geschwindigkeit setzen
 	velocity.x = direction.x * speed
 	velocity.z = direction.z * speed
 
-	# Roblox-Style: Charakter dreht sich schnell in Bewegungsrichtung
+	# Charakter dreht sofort in Bewegungsrichtung (Roblox-Style)
 	if direction.length() > 0.1:
 		var target_rotation := atan2(direction.x, direction.z)
 		rotation.y = lerp_angle(rotation.y, target_rotation, rotation_speed * delta)

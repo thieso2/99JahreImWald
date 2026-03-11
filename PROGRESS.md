@@ -119,3 +119,26 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - **S** = rückwärts, **A/D** = seitlich relativ zur Kamera
 - Charakter-Drehgeschwindigkeit von 3.0 auf 15.0 erhöht (fast sofortige Drehung wie in Roblox)
 - Gleiche Logik für Touch-Joystick
+
+---
+
+## 2026-03-11 – Steuerung komplett neu geschrieben (Take 2)
+
+### Probleme identifiziert
+- Vorwärtsrichtung war falsch berechnet (W bewegte Spieler in falsche Richtung)
+- Kamera-Yaw-Vorzeichen war inkonsistent zwischen Kamera-Position und Bewegungsberechnung
+- Kamera hatte Lag durch `lerp()` beim Folgen → Roblox hat keinen Kamera-Lag
+- Pitch-Werte waren negativ (verwirrend), jetzt positiv (5° = fast horizontal, 80° = fast von oben)
+
+### Kamera neu geschrieben
+- **Kein Lag mehr:** Kamera folgt Spieler sofort (`global_position = target.global_position`)
+- **Pitch jetzt positiv:** 5°-80°, intuitiver
+- **Kamera-Position:** Kugelkoordinaten korrekt: `(-sin(yaw)*cos(pitch)*dist, sin(pitch)*dist, cos(yaw)*cos(pitch)*dist)`
+- **Pfeiltasten:** Links/Rechts dreht Kamera, Hoch/Runter neigt
+- **+/- Tasten:** Zoom rein/raus
+- Rechte Maustaste + Maus und Touch-Drag bleiben
+
+### Bewegung neu berechnet
+- **Vorwärts-Vektor** korrekt abgeleitet aus Kamera-Position: `(sin(yaw), 0, -cos(yaw))`
+- **W-Taste:** `input_dir.y = +1` (nicht mehr -1), konsistent mit Vorwärts
+- **Bewegung getestet:** W = weg von Kamera, S = zur Kamera, A = links, D = rechts
