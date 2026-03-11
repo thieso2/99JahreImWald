@@ -25,6 +25,8 @@ extends Node3D
 @onready var sapling_label: Label = $HUD/SaplingLabel
 @onready var plant_button: Button = $HUD/PlantButton
 @onready var pickup_button: Button = $HUD/PickupButton
+@onready var drop_button: Button = $HUD/DropButton
+@onready var inventory_label: Label = $HUD/InventoryLabel
 
 # Sound-System
 var game_sounds: Node = null
@@ -59,7 +61,9 @@ func _ready() -> void:
 	axe_button.pressed.connect(_on_axe_toggle_pressed)
 	plant_button.pressed.connect(_on_plant_pressed)
 	pickup_button.pressed.connect(_on_pickup_pressed)
+	drop_button.pressed.connect(_on_drop_pressed)
 	player.sapling_changed.connect(_on_sapling_changed)
+	player.inventory_changed.connect(_on_inventory_changed)
 
 	# Kamera-Controller mit Spieler verbinden
 	camera_controller.target = player
@@ -84,8 +88,11 @@ func _ready() -> void:
 	plant_button.visible = false
 	pickup_button.text = "Aufsammeln [E]"
 	pickup_button.visible = false
+	drop_button.text = "Ablegen [G]"
+	drop_button.visible = false
+	inventory_label.text = ""
 
-	_show_message("Willkommen im Wald! Q=Axt, E=Hacken/Aufsammeln, F=Pflanzen")
+	_show_message("Q=Axt, E=Hacken/Sammeln, F=Pflanzen, G=Ablegen")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -95,6 +102,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_axe_toggle_pressed()
 	elif event.is_action_pressed("action_plant"):
 		_on_plant_pressed()
+	elif event.is_action_pressed("action_drop"):
+		_on_drop_pressed()
 
 
 func _process(delta: float) -> void:
@@ -241,6 +250,21 @@ func _on_plant_pressed() -> void:
 		_show_message("Keine Setzlinge vorhanden.", 1.5)
 
 
+func _on_drop_pressed() -> void:
+	var dropped: String = player.drop_item()
+	if dropped != "":
+		var name_de: String = "Holz" if dropped == "wood" else "Setzling"
+		_show_message("%s abgelegt!" % name_de, 1.0)
+		if game_sounds:
+			game_sounds.play_pickup_sound()
+	else:
+		_show_message("Inventar ist leer.", 1.0)
+
+
+func _on_inventory_changed() -> void:
+	_update_inventory_label()
+
+
 func _on_axe_toggle_pressed() -> void:
 	player.toggle_axe()
 	if player.axe_active:
@@ -272,6 +296,9 @@ func _update_action_buttons() -> void:
 			break
 	pickup_button.visible = near_item
 
+	# Drop-Button: sichtbar wenn Inventar nicht leer
+	drop_button.visible = player.inventory.size() > 0
+
 
 func _update_hp_bar(hp: float) -> void:
 	if hp_bar:
@@ -281,6 +308,19 @@ func _update_hp_bar(hp: float) -> void:
 func _update_wood_label(count: int) -> void:
 	if wood_label:
 		wood_label.text = "Holz: %d" % count
+
+
+func _update_inventory_label() -> void:
+	if not inventory_label:
+		return
+	if player.inventory.size() == 0:
+		inventory_label.text = ""
+		return
+
+	# Nächstes Item anzeigen (FIFO – das was als nächstes rausfliegt)
+	var next_item: String = player.inventory[0]
+	var next_de: String = "Holz" if next_item == "wood" else "Setzling"
+	inventory_label.text = "Inventar (%d): Nächstes: %s" % [player.inventory.size(), next_de]
 
 
 func _show_message(text: String, duration: float = 3.0) -> void:

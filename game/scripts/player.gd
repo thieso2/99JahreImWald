@@ -8,14 +8,12 @@ extends CharacterBody3D
 
 # Zustand
 var hp: float = 100.0
-var inventory: Array = []
+var inventory: Array = []  # FIFO-Queue: ["wood", "sapling", "wood", ...]
 var wood_count: int = 0
+var sapling_count: int = 0
 var has_torch: bool = false
 var is_near_campfire: bool = false
 var is_safe: bool = false
-
-# Setzlinge
-var sapling_count: int = 0
 
 # Axt-System
 var has_axe: bool = false
@@ -41,6 +39,7 @@ signal entered_safe_zone()
 signal left_safe_zone()
 signal axe_changed(active: bool)
 signal sapling_changed(new_count: int)
+signal inventory_changed()
 
 
 func _ready() -> void:
@@ -150,15 +149,28 @@ func die() -> void:
 
 
 func add_wood(amount: int = 1) -> void:
+	for i in range(amount):
+		inventory.append("wood")
 	wood_count += amount
 	wood_changed.emit(wood_count)
+	inventory_changed.emit()
 
 
 func craft_torch() -> bool:
 	if wood_count >= 3:
+		# 3 Holz aus dem Inventar entfernen (FIFO)
+		var removed: int = 0
+		var i: int = 0
+		while i < inventory.size() and removed < 3:
+			if inventory[i] == "wood":
+				inventory.remove_at(i)
+				removed += 1
+			else:
+				i += 1
 		wood_count -= 3
 		has_torch = true
 		wood_changed.emit(wood_count)
+		inventory_changed.emit()
 		return true
 	return false
 
@@ -180,8 +192,54 @@ func _on_safe_zone_exited() -> void:
 
 
 func add_sapling(amount: int = 1) -> void:
+	for i in range(amount):
+		inventory.append("sapling")
 	sapling_count += amount
 	sapling_changed.emit(sapling_count)
+	inventory_changed.emit()
+
+
+func drop_item() -> String:
+	# Ältestes Item aus dem Inventar droppen (FIFO)
+	if inventory.size() == 0:
+		return ""
+
+	var item_type: String = inventory[0]
+	inventory.remove_at(0)
+
+	# Zähler aktualisieren
+	match item_type:
+		"wood":
+			wood_count -= 1
+			wood_changed.emit(wood_count)
+		"sapling":
+			sapling_count -= 1
+			sapling_changed.emit(sapling_count)
+
+	inventory_changed.emit()
+
+	# Item vor dem Spieler spawnen
+	var dropped_item_script: GDScript = preload("res://scripts/dropped_item.gd")
+	var item := Area3D.new()
+	item.set_script(dropped_item_script)
+
+	match item_type:
+		"wood":
+			item.item_type = 0  # LOG
+		"sapling":
+			item.item_type = 1  # SAPLING
+
+	# Vor dem Spieler ablegen (nicht fliegen, sondern sanft fallen)
+	var forward := Vector3(sin(rotation.y), 0, cos(rotation.y))
+	item.position = global_position + forward * 1.5 + Vector3(0, 1.0, 0)
+	item.collision_layer = 0
+	item.collision_mask = 1
+
+	var tree_root: Node = get_tree().current_scene
+	if tree_root:
+		tree_root.add_child(item)
+
+	return item_type
 
 
 func plant_sapling() -> bool:
@@ -201,8 +259,13 @@ func plant_sapling() -> bool:
 	var tree_root: Node = get_tree().current_scene
 	if tree_root:
 		tree_root.add_child(sapling)
+		# Setzling aus Inventar entfernen
+		var idx: int = inventory.find("sapling")
+		if idx >= 0:
+			inventory.remove_at(idx)
 		sapling_count -= 1
 		sapling_changed.emit(sapling_count)
+		inventory_changed.emit()
 		return true
 	return false
 

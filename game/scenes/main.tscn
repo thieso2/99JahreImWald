@@ -290,6 +290,24 @@ offset_bottom = -10.0
 text = "Aufsammeln [E]"
 visible = false
 
+[node name="DropButton" type="Button" parent="HUD"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = -260.0
+offset_right = 200.0
+offset_bottom = -220.0
+text = "Ablegen [G]"
+visible = false
+
+[node name="InventoryLabel" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 175.0
+offset_right = 350.0
+offset_bottom = 200.0
+text = ""
+
 [node name="TouchJoystick" type="Control" parent="HUD"]
 anchors_preset = 2
 anchor_top = 1.0
