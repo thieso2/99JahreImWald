@@ -22,8 +22,22 @@ var flee_timer: float = 0.0
 var campfire_position: Vector3 = Vector3.ZERO
 var campfire_safe_radius: float = 8.0
 
+# Variante: hungriger Hirsch (rote Augen) oder normaler Hirsch (weiße Augen)
+var hungry: bool = false
+
+# Modell
+var deer_model: Node3D = null
+
 
 func _ready() -> void:
+	# Alte Meshes entfernen (aus tscn)
+	for child in get_children():
+		if child is MeshInstance3D:
+			child.queue_free()
+
+	# Prozedurales Modell erstellen
+	_rebuild_model()
+
 	# Starte inaktiv (wird nachts aktiviert)
 	visible = false
 	set_physics_process(false)
@@ -43,6 +57,11 @@ func _physics_process(delta: float) -> void:
 			_process_attacking(delta)
 		State.FLEEING:
 			_process_fleeing(delta)
+
+	# Modell-Animation: bewegt sich wenn Geschwindigkeit > 0
+	if deer_model:
+		var moving: bool = Vector2(velocity.x, velocity.z).length() > 0.5
+		deer_model.set_moving(moving)
 
 	move_and_slide()
 
@@ -72,6 +91,12 @@ func _process_roaming(delta: float) -> void:
 func _process_chasing(delta: float) -> void:
 	if not is_instance_valid(target_player):
 		current_state = State.ROAMING
+		return
+
+	# Prüfe ob Spieler Fackel hat – dann fliehen!
+	if target_player.has_method("toggle_torch") and target_player.torch_active:
+		current_state = State.FLEEING
+		flee_timer = 4.0
 		return
 
 	# Prüfe ob Spieler in sicherer Zone ist
@@ -122,17 +147,41 @@ func _process_fleeing(delta: float) -> void:
 		current_state = State.ROAMING
 		return
 
-	# Vom Lagerfeuer wegbewegen
-	var direction := (global_position - campfire_position)
+	# Fliehe vom Spieler (wenn Fackel aktiv) oder vom Lagerfeuer
+	var flee_from: Vector3 = campfire_position
+	if is_instance_valid(target_player) and target_player.has_method("toggle_torch") and target_player.torch_active:
+		flee_from = target_player.global_position
+
+	var direction := (global_position - flee_from)
 	direction.y = 0
 	direction = direction.normalized()
-	velocity.x = direction.x * speed
-	velocity.z = direction.z * speed
+	velocity.x = direction.x * chase_speed  # Schneller fliehen
+	velocity.z = direction.z * chase_speed
 	_face_direction(direction, delta)
+
+
+func _rebuild_model() -> void:
+	if deer_model and is_instance_valid(deer_model):
+		deer_model.queue_free()
+	var model_script: GDScript = preload("res://scripts/deer_model.gd")
+	deer_model = Node3D.new()
+	deer_model.set_script(model_script)
+	deer_model.hungry = hungry
+	deer_model.name = "DeerModel"
+	add_child(deer_model)
+
+
+func set_hungry(is_hungry: bool) -> void:
+	hungry = is_hungry
+	_rebuild_model()
 
 
 func activate(player: CharacterBody3D, campfire_pos: Vector3) -> void:
 	campfire_position = campfire_pos
+
+	# 30% Chance auf hungrigen Hirsch
+	set_hungry(randf() < 0.3)
+
 	visible = true
 	set_physics_process(true)
 	current_state = State.ROAMING
@@ -170,6 +219,15 @@ func _check_for_player() -> void:
 		if p is CharacterBody3D:
 			var distance: float = global_position.distance_to(p.global_position)
 			if distance < detection_range:
+				# Prüfe ob Spieler Fackel hat – dann fliehen!
+				if p.has_method("toggle_torch") and p.torch_active:
+					if distance < 12.0:
+						target_player = p
+						current_state = State.FLEEING
+						flee_timer = 4.0
+						return
+					else:
+						continue  # Zu weit weg, Fackel schreckt nicht ab
 				# Prüfe ob Spieler nicht in sicherer Zone
 				var dist_to_campfire: float = p.global_position.distance_to(campfire_position)
 				if dist_to_campfire >= campfire_safe_radius:

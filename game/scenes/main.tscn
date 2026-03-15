@@ -22,7 +22,7 @@ size = Vector3(200, 0.2, 200)
 size = Vector3(200, 0.2, 200)
 
 [sub_resource type="StandardMaterial3D" id="ground_mat"]
-albedo_color = Color(0.25, 0.55, 0.15, 1)
+albedo_color = Color(0.3, 0.62, 0.18, 1)
 
 [sub_resource type="CylinderMesh" id="campfire_mesh"]
 top_radius = 0.0
@@ -57,13 +57,13 @@ albedo_color = Color(0.5, 0.35, 0.2, 1)
 
 [sub_resource type="Environment" id="world_env"]
 background_mode = 1
-background_color = Color(0.55, 0.7, 0.85, 1)
+background_color = Color(0.6, 0.72, 0.82, 1)
 ambient_light_source = 2
-ambient_light_color = Color(0.6, 0.7, 0.85, 1)
-ambient_light_energy = 0.8
+ambient_light_color = Color(0.7, 0.75, 0.85, 1)
+ambient_light_energy = 1.0
 fog_enabled = true
-fog_light_color = Color(0.7, 0.75, 0.8, 1)
-fog_density = 0.012
+fog_light_color = Color(0.72, 0.76, 0.8, 1)
+fog_density = 0.018
 
 [sub_resource type="ParticleProcessMaterial" id="fire_particle_mat"]
 direction = Vector3(0, 1, 0)
@@ -84,7 +84,7 @@ script = ExtResource("3_dn")
 [node name="Sun" type="DirectionalLight3D" parent="DayNightCycle"]
 transform = Transform3D(1, 0, 0, 0, 0.5, -0.866, 0, 0.866, 0.5, 0, 20, 0)
 light_color = Color(1, 0.97, 0.9, 1)
-light_energy = 1.2
+light_energy = 1.5
 shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="DayNightCycle"]

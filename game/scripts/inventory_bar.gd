@@ -220,48 +220,83 @@ func _add_border(x: float, y: float, w: float, h: float, color: Color) -> void:
 
 
 func _add_item_icon(slot_x: float, slot_y: float, item_type: String, is_selected: bool) -> void:
-	var icon_size: float = SLOT_SIZE * 0.6
-	var icon_x: float = slot_x + (SLOT_SIZE - icon_size) / 2.0
-	var icon_y: float = slot_y + (SLOT_SIZE - icon_size) / 2.0
+	var s: float = SLOT_SIZE  # Slot-Größe
+	var cx: float = slot_x + s * 0.5  # Mitte X
+	var cy: float = slot_y + s * 0.5  # Mitte Y
+	var p: float = 6.0  # Padding
 
 	match item_type:
 		"wood":
-			# Holz-Icon: braunes Rechteck
-			var icon := ColorRect.new()
-			icon.color = wood_color
-			icon.position = Vector2(icon_x + 4, icon_y + 8)
-			icon.size = Vector2(icon_size - 8, icon_size - 16)
-			add_child(icon)
-			slot_containers.append(icon)
-
-			# Hellerer Kern (Holzmaserung)
-			var inner := ColorRect.new()
-			inner.color = Color(0.65, 0.45, 0.2, 1)
-			inner.position = Vector2(icon_x + 12, icon_y + 14)
-			inner.size = Vector2(icon_size - 24, icon_size - 28)
-			add_child(inner)
-			slot_containers.append(inner)
+			# Holzscheit: liegender Stamm mit Jahresringen
+			_icon_rect(slot_x + p, cy - 4, s - p * 2, 12, Color(0.45, 0.28, 0.14))
+			_icon_rect(slot_x + p, cy - 6, s - p * 2, 3, Color(0.55, 0.35, 0.18))
+			# Jahresringe links
+			_icon_rect(slot_x + p, cy - 8, 8, 20, Color(0.75, 0.55, 0.3))
+			_icon_rect(slot_x + p + 2, cy - 6, 4, 16, Color(0.45, 0.28, 0.14))
+			# Ast oben
+			_icon_rect(cx + 4, cy - 12, 3, 10, Color(0.4, 0.25, 0.12))
 
 		"sapling":
-			# Setzling-Icon: grüner Stiel + Blatt
-			var stem := ColorRect.new()
-			stem.color = Color(0.3, 0.45, 0.15, 1)
-			stem.position = Vector2(icon_x + icon_size / 2.0 - 2, icon_y + icon_size * 0.3)
-			stem.size = Vector2(4, icon_size * 0.6)
-			add_child(stem)
-			slot_containers.append(stem)
+			# Setzling: Terrakotta-Topf + grüner Sprössling
+			_icon_rect(cx - 10, cy + 6, 20, 14, Color(0.7, 0.4, 0.2))  # Topf
+			_icon_rect(cx - 8, cy + 4, 16, 3, Color(0.3, 0.2, 0.12))   # Erde
+			_icon_rect(cx - 1.5, cy - 10, 3, 20, Color(0.2, 0.5, 0.1)) # Stiel
+			_icon_rect(cx - 10, cy - 14, 9, 6, Color(0.15, 0.7, 0.1))  # Blatt links
+			_icon_rect(cx + 1, cy - 12, 9, 6, Color(0.15, 0.7, 0.1))   # Blatt rechts
 
-			# Blatt
-			var leaf := ColorRect.new()
-			leaf.color = sapling_color
-			leaf.position = Vector2(icon_x + icon_size * 0.2, icon_y + 4)
-			leaf.size = Vector2(icon_size * 0.6, icon_size * 0.4)
-			add_child(leaf)
-			slot_containers.append(leaf)
+		"torch":
+			# Fackel: Stock + Wicklung + Flamme
+			_icon_rect(cx - 2, cy - 4, 4, 28, Color(0.45, 0.28, 0.14))  # Stock
+			_icon_rect(cx - 4, cy - 8, 8, 8, Color(0.2, 0.15, 0.1))     # Wicklung
+			_icon_rect(cx - 6, cy - 18, 12, 12, Color(1.0, 0.6, 0.1))   # Flamme
+			_icon_rect(cx - 4, cy - 16, 8, 8, Color(1.0, 0.9, 0.3))     # Flamme hell
+
+		"bed":
+			# Bett: Rahmen + rote Matratze + weißes Kissen
+			_icon_rect(slot_x + p, cy + 4, s - p * 2, 6, Color(0.5, 0.3, 0.15))  # Rahmen
+			_icon_rect(slot_x + p + 2, cy - 4, s - p * 2 - 4, 10, Color(0.8, 0.15, 0.12))  # Matratze
+			_icon_rect(slot_x + s - p - 14, cy - 8, 12, 6, Color(1.0, 1.0, 0.9))  # Kissen
+			_icon_rect(slot_x + p, cy - 2, s - p * 2 - 16, 6, Color(0.6, 0.1, 0.1))  # Decke
+			_icon_rect(slot_x + s - p - 2, cy - 12, 4, 18, Color(0.5, 0.3, 0.15))  # Kopfteil
+
+		"fence":
+			# Zaun: 3 Pfosten + 2 Latten
+			for i in range(3):
+				var px: float = slot_x + p + 6 + i * 14
+				_icon_rect(px, cy - 14, 5, 30, Color(0.6, 0.45, 0.25))
+				_icon_rect(px, cy - 17, 7, 4, Color(0.4, 0.25, 0.12))  # Spitze
+			_icon_rect(slot_x + p + 4, cy - 6, 32, 3, Color(0.4, 0.25, 0.12))
+			_icon_rect(slot_x + p + 4, cy + 6, 32, 3, Color(0.4, 0.25, 0.12))
+
+		"wall":
+			# Wand: Stehende Planken + Seil
+			for i in range(5):
+				var px: float = slot_x + p + 3 + i * 7
+				_icon_rect(px, cy - 14, 6, 30, Color(0.55, 0.38, 0.2))
+			_icon_rect(slot_x + p, cy - 4, s - p * 2, 3, Color(0.7, 0.6, 0.4))  # Seil
+			_icon_rect(slot_x + p, cy + 8, s - p * 2, 3, Color(0.7, 0.6, 0.4))  # Seil
+
+		"chest":
+			# Truhe: Dunkelbraune Box + Gold-Schloss + Metallbänder
+			_icon_rect(cx - 16, cy - 6, 32, 20, Color(0.35, 0.2, 0.1))  # Körper
+			_icon_rect(cx - 17, cy - 10, 34, 6, Color(0.4, 0.25, 0.12)) # Deckel
+			_icon_rect(cx - 3, cy - 2, 6, 8, Color(0.85, 0.7, 0.2))     # Gold-Schloss
+			_icon_rect(cx - 12, cy - 8, 3, 22, Color(0.3, 0.3, 0.28))   # Band links
+			_icon_rect(cx + 9, cy - 8, 3, 22, Color(0.3, 0.3, 0.28))    # Band rechts
+
+		_:
+			_icon_rect(slot_x + p, slot_y + p, s - p * 2, s - p * 2, Color(0.5, 0.45, 0.4))
 
 	# Item-Name unter dem Slot (nur für ausgewähltes Item)
 	if is_selected:
-		var name_de: String = "Holz" if item_type == "wood" else "Setzling"
+		var name_de: String = "Holz"
+		match item_type:
+			"sapling": name_de = "Setzling"
+			"torch": name_de = "Fackel"
+			"bed": name_de = "Bett"
+			"fence": name_de = "Zaun"
+			"wall": name_de = "Wand"
+			"chest": name_de = "Truhe"
 		var name_label := Label.new()
 		name_label.text = name_de
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -270,3 +305,12 @@ func _add_item_icon(slot_x: float, slot_y: float, item_type: String, is_selected
 		name_label.add_theme_font_size_override("font_size", 11)
 		add_child(name_label)
 		slot_containers.append(name_label)
+
+
+func _icon_rect(x: float, y: float, w: float, h: float, color: Color) -> void:
+	var r := ColorRect.new()
+	r.position = Vector2(x, y)
+	r.size = Vector2(w, h)
+	r.color = color
+	add_child(r)
+	slot_containers.append(r)

@@ -2,9 +2,10 @@ extends CharacterBody3D
 
 # Spieler-Einstellungen
 @export var speed: float = 5.0
-@export var sprint_speed: float = 8.0
+@export var sprint_speed: float = 12.0
 @export var max_hp: float = 100.0
 @export var rotation_speed: float = 15.0  # Schnelle Drehung wie in Roblox
+@export var jump_force: float = 5.0
 
 # Zustand
 var hp: float = 100.0
@@ -12,6 +13,7 @@ var inventory: Array = []  # FIFO-Queue: ["wood", "sapling", "wood", ...]
 var wood_count: int = 0
 var sapling_count: int = 0
 var has_torch: bool = false
+var torch_active: bool = false  # Fackel angezündet?
 var is_near_campfire: bool = false
 var is_safe: bool = false
 
@@ -40,6 +42,7 @@ signal left_safe_zone()
 signal axe_changed(active: bool)
 signal sapling_changed(new_count: int)
 signal inventory_changed()
+signal torch_changed(active: bool)
 
 
 func _ready() -> void:
@@ -69,6 +72,10 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= 9.8 * delta
 
+	# Springen
+	if is_on_floor() and Input.is_action_just_pressed("action_jump"):
+		velocity.y = jump_force
+
 	# Input sammeln (Joystick oder Tastatur)
 	var input_dir := Vector2.ZERO
 	var shift_held := Input.is_key_pressed(KEY_SHIFT)
@@ -87,8 +94,9 @@ func _physics_process(delta: float) -> void:
 		if Input.is_action_pressed("move_right"):
 			input_dir.x += 1
 
-	# Pfeiltasten Hoch/Runter: Bewegung (nur ohne Ctrl)
-	if input_dir.length() < 0.1 and not shift_held:
+	# Pfeiltasten Hoch/Runter: Bewegung (nur ohne Ctrl/Meta)
+	var ctrl_held := Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
+	if input_dir.length() < 0.1 and not ctrl_held:
 		if Input.is_key_pressed(KEY_UP):
 			input_dir.y += 1
 		if Input.is_key_pressed(KEY_DOWN):
@@ -108,20 +116,25 @@ func _physics_process(delta: float) -> void:
 		direction = (forward * input_dir.y + right * input_dir.x).normalized()
 		walking = true
 
-	# Geschwindigkeit setzen
-	velocity.x = direction.x * speed
-	velocity.z = direction.z * speed
+	# Geschwindigkeit setzen (Shift = Sprinten)
+	var current_speed: float = sprint_speed if shift_held and walking else speed
+	velocity.x = direction.x * current_speed
+	velocity.z = direction.z * current_speed
 
 	# Charakter dreht sofort in Bewegungsrichtung (Roblox-Style)
 	if direction.length() > 0.1:
 		var target_rotation := atan2(direction.x, direction.z)
 		rotation.y = lerp_angle(rotation.y, target_rotation, rotation_speed * delta)
 
-	# Animation und Sound
+	# Animation und Sound – in der Luft keine Gehanimation
+	var on_ground: bool = is_on_floor()
+	var sprinting: bool = shift_held and walking and on_ground
 	if player_model:
-		player_model.set_walking(walking)
+		player_model.set_walking(walking and on_ground)
+		player_model.set_sprinting(sprinting)
+		player_model.set_jumping(not on_ground)
 	if footsteps:
-		footsteps.set_walking(walking)
+		footsteps.set_walking(walking and on_ground)
 
 	move_and_slide()
 
@@ -142,10 +155,17 @@ func heal(amount: float) -> void:
 
 func die() -> void:
 	player_died.emit()
-	# Respawn am Lagerfeuer
+	# Kein Teleport! Spieler wird nur geheilt und kurz unverwundbar
 	hp = max_hp
 	hp_changed.emit(hp)
-	global_position = Vector3(0, 1, 0)
+	is_safe = true
+	# Nach 3 Sekunden wieder verwundbar
+	get_tree().create_timer(3.0).timeout.connect(_end_invincibility)
+
+
+func _end_invincibility() -> void:
+	if not is_near_campfire:
+		is_safe = false
 
 
 func add_wood(amount: int = 1) -> void:
@@ -169,10 +189,24 @@ func craft_torch() -> bool:
 				i += 1
 		wood_count -= 3
 		has_torch = true
+		# Fackel ins Inventar legen
+		inventory.append("torch")
 		wood_changed.emit(wood_count)
 		inventory_changed.emit()
 		return true
 	return false
+
+
+func toggle_torch() -> void:
+	if not has_torch:
+		return
+	torch_active = not torch_active
+	if player_model:
+		if torch_active:
+			player_model.equip_torch()
+		else:
+			player_model.unequip_torch()
+	torch_changed.emit(torch_active)
 
 
 func set_joystick_input(direction: Vector2) -> void:
@@ -217,6 +251,13 @@ func drop_item_at(index: int = 0) -> String:
 		"sapling":
 			sapling_count -= 1
 			sapling_changed.emit(sapling_count)
+		"torch":
+			has_torch = false
+			if torch_active:
+				torch_active = false
+				if player_model:
+					player_model.unequip_torch()
+				torch_changed.emit(false)
 
 	inventory_changed.emit()
 
@@ -230,12 +271,51 @@ func drop_item_at(index: int = 0) -> String:
 			item.item_type = 0  # LOG
 		"sapling":
 			item.item_type = 1  # SAPLING
+		_:
+			item.item_string = item_type  # String-basiert (torch, bed, fence, etc.)
 
 	# Vor dem Spieler ablegen (nicht fliegen, sondern sanft fallen)
 	var forward := Vector3(sin(rotation.y), 0, cos(rotation.y))
 	item.position = global_position + forward * 1.5 + Vector3(0, 1.0, 0)
 	item.collision_layer = 0
 	item.collision_mask = 1
+
+	var tree_root: Node = get_tree().current_scene
+	if tree_root:
+		tree_root.add_child(item)
+
+	return item_type
+
+
+func place_item_at(index: int = 0) -> String:
+	# Platzierbares Item aus dem Inventar vor dem Spieler platzieren
+	if inventory.size() == 0:
+		return ""
+	if index < 0 or index >= inventory.size():
+		return ""
+
+	var item_type: String = inventory[index]
+
+	# Nur platzierbare Items
+	var placeables: Array = ["bed", "fence", "wall", "chest"]
+	if item_type not in placeables:
+		return ""
+
+	# Aus Inventar entfernen
+	inventory.remove_at(index)
+	inventory_changed.emit()
+
+	# Platzierbares Item erstellen
+	var placeable_script: GDScript = preload("res://scripts/placeable_item.gd")
+	var item := StaticBody3D.new()
+	item.set_script(placeable_script)
+	item.item_type = item_type
+
+	# 2.5m vor dem Spieler platzieren
+	var forward := Vector3(sin(rotation.y), 0, cos(rotation.y))
+	item.position = global_position + forward * 2.5
+	item.position.y = 0.0
+	item.rotation.y = rotation.y  # Gleiche Richtung wie Spieler
 
 	var tree_root: Node = get_tree().current_scene
 	if tree_root:

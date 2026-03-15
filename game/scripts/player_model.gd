@@ -20,7 +20,9 @@ var right_leg: MeshInstance3D
 # Animation
 var walk_cycle: float = 0.0
 var is_walking: bool = false
+var is_sprinting: bool = false
 @export var walk_anim_speed: float = 8.0
+@export var sprint_anim_speed: float = 14.0
 @export var arm_swing_angle: float = 35.0
 @export var leg_swing_angle: float = 40.0
 @export var body_bob_amount: float = 0.06
@@ -30,10 +32,17 @@ var is_walking: bool = false
 var axe_node: Node3D = null
 var axe_script: GDScript = null
 
+# Fackel
+var torch_node: Node3D = null
+var torch_script: GDScript = null
+
 # Hack-Animation
 var is_chopping: bool = false
 var chop_cycle: float = 0.0
 var chop_duration: float = 0.55  # Länger für realistischeren Schwung
+
+# Sprung-Animation
+var is_jumping: bool = false
 
 # Materialien
 var skin_mat: StandardMaterial3D
@@ -48,6 +57,7 @@ var hair_mat: StandardMaterial3D
 
 func _ready() -> void:
 	axe_script = preload("res://scripts/axe_item.gd")
+	torch_script = preload("res://scripts/torch_item.gd")
 	_create_materials()
 	_build_body()
 
@@ -60,8 +70,11 @@ func _process(delta: float) -> void:
 			is_chopping = false
 			chop_cycle = 0.0
 
-	if is_walking:
-		walk_cycle += delta * walk_anim_speed
+	if is_jumping:
+		_animate_jump(delta)
+	elif is_walking:
+		var anim_speed: float = sprint_anim_speed if is_sprinting else walk_anim_speed
+		walk_cycle += delta * anim_speed
 		_animate_walk()
 	else:
 		walk_cycle = 0.0
@@ -74,6 +87,14 @@ func _process(delta: float) -> void:
 
 func set_walking(walking: bool) -> void:
 	is_walking = walking
+
+
+func set_sprinting(sprinting: bool) -> void:
+	is_sprinting = sprinting
+
+
+func set_jumping(jumping: bool) -> void:
+	is_jumping = jumping
 
 
 func _create_materials() -> void:
@@ -283,25 +304,36 @@ func _animate_walk() -> void:
 	var swing: float = sin(walk_cycle)
 	var swing_offset: float = cos(walk_cycle)
 
+	# Sprint = größere Ausschläge, mehr Körperneigung
+	var sprint_mult: float = 1.6 if is_sprinting else 1.0
+
 	# Beine schwingen gegenläufig
-	var leg_angle: float = swing * deg_to_rad(leg_swing_angle)
+	var leg_angle: float = swing * deg_to_rad(leg_swing_angle * sprint_mult)
 	left_leg_pivot.rotation.x = leg_angle
 	right_leg_pivot.rotation.x = -leg_angle
 
 	# Arme schwingen gegenläufig zu den Beinen
-	var arm_angle: float = swing * deg_to_rad(arm_swing_angle)
+	var arm_angle: float = swing * deg_to_rad(arm_swing_angle * sprint_mult)
 	left_arm_pivot.rotation.x = -arm_angle
 	right_arm_pivot.rotation.x = arm_angle
 
-	# Körper wippt leicht
-	body.position.y = 1.05 + abs(swing_offset) * body_bob_amount
+	# Körper wippt leicht (Sprint = mehr)
+	body.position.y = 1.05 + abs(swing_offset) * body_bob_amount * sprint_mult
 
 	# Kopf wippt leicht (weniger als Körper)
-	head.position.y = 1.6 + abs(swing_offset) * head_bob_amount
+	head.position.y = 1.6 + abs(swing_offset) * head_bob_amount * sprint_mult
 
 	# Leichtes seitliches Wippen des Körpers
-	body.rotation.z = swing * deg_to_rad(2.0)
-	head.rotation.z = swing * deg_to_rad(1.0)
+	body.rotation.z = swing * deg_to_rad(2.0 * sprint_mult)
+	head.rotation.z = swing * deg_to_rad(1.0 * sprint_mult)
+
+	# Beim Sprint: Oberkörper leicht nach vorne geneigt
+	if is_sprinting:
+		body.rotation.x = -0.15
+		head.rotation.x = -0.08
+	else:
+		body.rotation.x = 0.0
+		head.rotation.x = 0.0
 
 
 func _animate_idle(delta: float) -> void:
@@ -323,21 +355,44 @@ func _animate_idle(delta: float) -> void:
 	body.position.y += breath
 
 
+func _animate_jump(delta: float) -> void:
+	var target_speed: float = 8.0
+
+	# Arme hoch (nach oben gestreckt)
+	left_arm_pivot.rotation_degrees.x = lerp(left_arm_pivot.rotation_degrees.x, -160.0, target_speed * delta)
+	right_arm_pivot.rotation_degrees.x = lerp(right_arm_pivot.rotation_degrees.x, -160.0, target_speed * delta)
+
+	# Beine leicht angezogen
+	left_leg_pivot.rotation_degrees.x = lerp(left_leg_pivot.rotation_degrees.x, -20.0, target_speed * delta)
+	right_leg_pivot.rotation_degrees.x = lerp(right_leg_pivot.rotation_degrees.x, -20.0, target_speed * delta)
+
+	# Körper leicht nach vorne
+	body.rotation.x = lerp(body.rotation.x, -0.05, target_speed * delta)
+	head.rotation.x = lerp(head.rotation.x, 0.1, target_speed * delta)
+
+
 func equip_axe(tier: int) -> void:
 	unequip_axe()
 	axe_node = Node3D.new()
 	axe_node.set_script(axe_script)
 	axe_node.tier = tier
 	axe_node.name = "AxeItem"
-	# Axt in der rechten Hand positionieren
-	axe_node.position = Vector3(0, -0.38, 0.08)
+	# Axt weit vorne in der Hand – bereit zum Zuschlagen
+	axe_node.position = Vector3(0, -0.45, 0.25)
+	# Klinge nach unten + nach vorne ausrichten
+	axe_node.rotation_degrees.z = -90.0
+	axe_node.rotation_degrees.y = 270.0
 	right_arm_pivot.add_child(axe_node)
+	# Arm leicht nach vorne kippen (Axt vor dem Körper halten)
+	right_arm_pivot.rotation_degrees.x = -25.0
 
 
 func unequip_axe() -> void:
 	if axe_node and is_instance_valid(axe_node):
 		axe_node.queue_free()
 		axe_node = null
+	if right_arm_pivot:
+		right_arm_pivot.rotation_degrees.x = 0.0
 
 
 func play_chop() -> void:
@@ -391,3 +446,25 @@ func _animate_chop() -> void:
 	# Körper dreht sich leicht seitlich (wie ein echter Holzfäller)
 	body.rotation.y = body_twist
 	head.rotation.y = body_twist * 0.3
+
+
+func equip_torch() -> void:
+	unequip_torch()
+	torch_node = Node3D.new()
+	torch_node.set_script(torch_script)
+	torch_node.name = "TorchItem"
+	# Fackel weit vorne – gleiche Position und Winkel wie Axt
+	torch_node.position = Vector3(0, -0.45, 0.25)
+	torch_node.rotation_degrees.z = -90.0
+	torch_node.rotation_degrees.y = 270.0
+	left_arm_pivot.add_child(torch_node)
+	# Arm nach vorne strecken (gleich wie bei Axt)
+	left_arm_pivot.rotation_degrees.x = -25.0
+
+
+func unequip_torch() -> void:
+	if torch_node and is_instance_valid(torch_node):
+		torch_node.queue_free()
+		torch_node = null
+	if left_arm_pivot:
+		left_arm_pivot.rotation_degrees.x = 0.0

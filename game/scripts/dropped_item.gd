@@ -1,12 +1,12 @@
 extends Area3D
 
-# Gedropptes Item: Holzscheit oder Setzling
+# Gedropptes Item – sieht aus wie der echte Gegenstand auf dem Boden
 # Fliegt durch die Luft, landet am Boden, muss mit E-Taste eingesammelt werden
-# Sichtbar als kleiner Sack
 
-enum ItemType { LOG, SAPLING }
+enum ItemType { NONE = -1, LOG = 0, SAPLING = 1 }
 
-var item_type: int = ItemType.LOG
+var item_type: int = ItemType.NONE
+var item_string: String = ""  # Alternativ: String-basierter Typ
 
 # Physik-Simulation
 var fly_velocity: Vector3 = Vector3.ZERO
@@ -30,7 +30,7 @@ func _ready() -> void:
 	col.position.y = 0.3
 	add_child(col)
 
-	_build_sack_mesh()
+	_build_item_mesh()
 
 	# Zufällige Flugrichtung
 	var rng := RandomNumberGenerator.new()
@@ -78,97 +78,387 @@ func try_pickup(body: Node3D) -> bool:
 	if dist > 2.5:
 		return false
 
-	match item_type:
-		ItemType.LOG:
-			if body.has_method("add_wood"):
-				body.add_wood(1)
-		ItemType.SAPLING:
-			if body.has_method("add_sapling"):
-				body.add_sapling(1)
+	if item_string != "":
+		# String-basiertes Item ins Inventar
+		if body.has_method("add_wood"):  # Hat Inventar-System
+			match item_string:
+				"torch":
+					body.has_torch = true
+					body.inventory.append("torch")
+					body.inventory_changed.emit()
+				_:
+					body.inventory.append(item_string)
+					body.inventory_changed.emit()
+	else:
+		match item_type:
+			ItemType.LOG:
+				if body.has_method("add_wood"):
+					body.add_wood(1)
+			ItemType.SAPLING:
+				if body.has_method("add_sapling"):
+					body.add_sapling(1)
 
 	queue_free()
 	return true
 
 
-func _build_sack_mesh() -> void:
-	# Sack-Farbe je nach Item-Typ
-	sack_mat = StandardMaterial3D.new()
+func _build_item_mesh() -> void:
+	# Zuerst String-basierte Items prüfen
+	if item_string != "":
+		match item_string:
+			"wood": _build_log()
+			"sapling": _build_sapling()
+			"torch": _build_torch()
+			"bed": _build_bed()
+			"fence": _build_fence()
+			"wall": _build_wall_item()
+			"chest": _build_chest()
+			_: _build_log()
+		return
+
+	# Dann enum-basierte Items (von Bäumen gedroppt)
 	match item_type:
 		ItemType.LOG:
-			sack_mat.albedo_color = Color(0.55, 0.35, 0.15, 1)  # Brauner Sack
+			_build_log()
 		ItemType.SAPLING:
-			sack_mat.albedo_color = Color(0.3, 0.5, 0.2, 1)  # Grüner Sack
-
-	tie_mat = StandardMaterial3D.new()
-	tie_mat.albedo_color = Color(0.35, 0.2, 0.1, 1)
-
-	# Sack-Körper (abgerundete Box)
-	var sack_body := MeshInstance3D.new()
-	var body_mesh := SphereMesh.new()
-	body_mesh.radius = 0.2
-	body_mesh.height = 0.35
-	sack_body.mesh = body_mesh
-	sack_body.material_override = sack_mat
-	sack_body.position.y = 0.18
-	sack_body.name = "SackBody"
-	add_child(sack_body)
-
-	# Sack-Zipfel oben (zusammengebunden)
-	var tie := MeshInstance3D.new()
-	var tie_mesh := CylinderMesh.new()
-	tie_mesh.top_radius = 0.02
-	tie_mesh.bottom_radius = 0.06
-	tie_mesh.height = 0.1
-	tie.mesh = tie_mesh
-	tie.material_override = tie_mat
-	tie.position.y = 0.38
-	add_child(tie)
-
-	# Icon je nach Item-Typ
-	match item_type:
-		ItemType.LOG:
-			_add_log_icon()
-		ItemType.SAPLING:
-			_add_sapling_icon()
+			_build_sapling()
+		_:
+			_build_log()
 
 
-func _add_log_icon() -> void:
-	# Kleines Holzscheit oben auf dem Sack
-	icon_mat = StandardMaterial3D.new()
-	icon_mat.albedo_color = Color(0.4, 0.22, 0.1, 1)
+func _build_log() -> void:
+	# HOLZSCHEIT: Dicker brauner Stamm, liegend, mit Jahresringen
+	var bark := StandardMaterial3D.new()
+	bark.albedo_color = Color(0.45, 0.28, 0.14, 1)
+	var rings := StandardMaterial3D.new()
+	rings.albedo_color = Color(0.75, 0.55, 0.3, 1)
 
-	var log_icon := MeshInstance3D.new()
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = 0.04
-	mesh.bottom_radius = 0.05
-	mesh.height = 0.25
-	log_icon.mesh = mesh
-	log_icon.material_override = icon_mat
-	log_icon.rotation.z = PI / 4.0  # Schräg
-	log_icon.position = Vector3(0.05, 0.42, 0)
-	add_child(log_icon)
+	# Dicker Stamm liegend
+	var log := MeshInstance3D.new()
+	var lm := CylinderMesh.new()
+	lm.top_radius = 0.15
+	lm.bottom_radius = 0.18
+	lm.height = 0.7
+	log.mesh = lm
+	log.material_override = bark
+	log.rotation.z = PI / 2.0
+	log.position.y = 0.18
+	add_child(log)
+
+	# Jahresringe an beiden Enden
+	for side in [-1, 1]:
+		var ring := MeshInstance3D.new()
+		var rm := CylinderMesh.new()
+		rm.top_radius = 0.13
+		rm.bottom_radius = 0.13
+		rm.height = 0.02
+		ring.mesh = rm
+		ring.material_override = rings
+		ring.rotation.z = PI / 2.0
+		ring.position = Vector3(side * 0.35, 0.18, 0)
+		add_child(ring)
+
+	# Kleiner Ast
+	var twig := MeshInstance3D.new()
+	var tm := CylinderMesh.new()
+	tm.top_radius = 0.01
+	tm.bottom_radius = 0.02
+	tm.height = 0.15
+	twig.mesh = tm
+	twig.material_override = bark
+	twig.position = Vector3(0.1, 0.32, 0)
+	twig.rotation.z = 0.5
+	add_child(twig)
 
 
-func _add_sapling_icon() -> void:
-	# Kleiner Trieb oben auf dem Sack
-	icon_mat = StandardMaterial3D.new()
-	icon_mat.albedo_color = Color(0.15, 0.55, 0.12, 1)
+func _build_sapling() -> void:
+	# SETZLING: Terrakotta-Topf mit grünem Sprössling und 2 Blättern
+	var pot_mat := StandardMaterial3D.new()
+	pot_mat.albedo_color = Color(0.7, 0.4, 0.2, 1)  # Terrakotta
+	var earth_mat := StandardMaterial3D.new()
+	earth_mat.albedo_color = Color(0.3, 0.2, 0.12, 1)
+	var stem_mat := StandardMaterial3D.new()
+	stem_mat.albedo_color = Color(0.2, 0.5, 0.1, 1)
+	var leaf_mat := StandardMaterial3D.new()
+	leaf_mat.albedo_color = Color(0.15, 0.7, 0.1, 1)  # Leuchtend grün
 
+	# Topf
+	var pot := MeshInstance3D.new()
+	var pm := CylinderMesh.new()
+	pm.top_radius = 0.15
+	pm.bottom_radius = 0.1
+	pm.height = 0.15
+	pot.mesh = pm
+	pot.material_override = pot_mat
+	pot.position.y = 0.08
+	add_child(pot)
+
+	# Erde im Topf
+	var earth := MeshInstance3D.new()
+	var em := CylinderMesh.new()
+	em.top_radius = 0.13
+	em.bottom_radius = 0.13
+	em.height = 0.03
+	earth.mesh = em
+	earth.material_override = earth_mat
+	earth.position.y = 0.16
+	add_child(earth)
+
+	# Stiel
 	var stem := MeshInstance3D.new()
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = 0.01
-	mesh.bottom_radius = 0.015
-	mesh.height = 0.12
-	stem.mesh = mesh
-	stem.material_override = icon_mat
-	stem.position = Vector3(0, 0.45, 0)
+	var sm := CylinderMesh.new()
+	sm.top_radius = 0.015
+	sm.bottom_radius = 0.025
+	sm.height = 0.25
+	stem.mesh = sm
+	stem.material_override = stem_mat
+	stem.position.y = 0.3
 	add_child(stem)
 
-	var leaf := MeshInstance3D.new()
-	var leaf_mesh := SphereMesh.new()
-	leaf_mesh.radius = 0.05
-	leaf_mesh.height = 0.04
-	leaf.mesh = leaf_mesh
-	leaf.material_override = icon_mat
-	leaf.position = Vector3(0, 0.53, 0)
-	add_child(leaf)
+	# 2 Blätter (seitlich)
+	for side in [-1, 1]:
+		var leaf := MeshInstance3D.new()
+		var lfm := BoxMesh.new()
+		lfm.size = Vector3(0.12, 0.02, 0.08)
+		leaf.mesh = lfm
+		leaf.material_override = leaf_mat
+		leaf.position = Vector3(side * 0.06, 0.4, 0)
+		leaf.rotation.z = side * 0.4
+		add_child(leaf)
+
+
+func _build_torch() -> void:
+	# FACKEL: Langer Stock mit orangem Feuer-Tuch oben, leuchtend
+	var stick_mat := StandardMaterial3D.new()
+	stick_mat.albedo_color = Color(0.45, 0.28, 0.14, 1)
+	var wrap_mat := StandardMaterial3D.new()
+	wrap_mat.albedo_color = Color(0.2, 0.15, 0.1, 1)
+	var flame_mat := StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.6, 0.1, 1)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.4, 0.0, 1)
+	flame_mat.emission_energy_multiplier = 0.5
+
+	# Stock (schräg liegend)
+	var stick := MeshInstance3D.new()
+	var sm := CylinderMesh.new()
+	sm.top_radius = 0.025
+	sm.bottom_radius = 0.035
+	sm.height = 0.7
+	stick.mesh = sm
+	stick.material_override = stick_mat
+	stick.rotation.z = PI / 3.0
+	stick.position = Vector3(-0.1, 0.2, 0)
+	add_child(stick)
+
+	# Wicklung oben
+	var wrap := MeshInstance3D.new()
+	var wm := CylinderMesh.new()
+	wm.top_radius = 0.05
+	wm.bottom_radius = 0.04
+	wm.height = 0.12
+	wrap.mesh = wm
+	wrap.material_override = wrap_mat
+	wrap.rotation.z = PI / 3.0
+	wrap.position = Vector3(0.15, 0.48, 0)
+	add_child(wrap)
+
+	# Glühender Kopf
+	var flame := MeshInstance3D.new()
+	var fm := SphereMesh.new()
+	fm.radius = 0.07
+	fm.height = 0.1
+	flame.mesh = fm
+	flame.material_override = flame_mat
+	flame.position = Vector3(0.2, 0.55, 0)
+	add_child(flame)
+
+
+func _build_bed() -> void:
+	# BETT: Rotes Bett mit Holzrahmen, Kissen, Decke
+	var frame_mat := StandardMaterial3D.new()
+	frame_mat.albedo_color = Color(0.5, 0.3, 0.15, 1)
+	var mattress_mat := StandardMaterial3D.new()
+	mattress_mat.albedo_color = Color(0.8, 0.2, 0.15, 1)  # Leuchtend rot
+	var pillow_mat := StandardMaterial3D.new()
+	pillow_mat.albedo_color = Color(1.0, 1.0, 0.9, 1)  # Weiß
+	var blanket_mat := StandardMaterial3D.new()
+	blanket_mat.albedo_color = Color(0.6, 0.1, 0.1, 1)  # Dunkelrot
+
+	# Holzrahmen
+	var frame := MeshInstance3D.new()
+	var fm := BoxMesh.new()
+	fm.size = Vector3(0.45, 0.08, 0.7)
+	frame.mesh = fm
+	frame.material_override = frame_mat
+	frame.position.y = 0.08
+	add_child(frame)
+
+	# Beine
+	for x in [-1, 1]:
+		for z in [-1, 1]:
+			var leg := MeshInstance3D.new()
+			var lm := BoxMesh.new()
+			lm.size = Vector3(0.04, 0.06, 0.04)
+			leg.mesh = lm
+			leg.material_override = frame_mat
+			leg.position = Vector3(x * 0.18, 0.03, z * 0.3)
+			add_child(leg)
+
+	# Matratze
+	var matt := MeshInstance3D.new()
+	var mm := BoxMesh.new()
+	mm.size = Vector3(0.4, 0.06, 0.65)
+	matt.mesh = mm
+	matt.material_override = mattress_mat
+	matt.position.y = 0.15
+	add_child(matt)
+
+	# Kissen
+	var pillow := MeshInstance3D.new()
+	var plm := BoxMesh.new()
+	plm.size = Vector3(0.25, 0.05, 0.12)
+	pillow.mesh = plm
+	pillow.material_override = pillow_mat
+	pillow.position = Vector3(0, 0.2, 0.25)
+	add_child(pillow)
+
+	# Decke (halb aufgedeckt)
+	var blanket := MeshInstance3D.new()
+	var blm := BoxMesh.new()
+	blm.size = Vector3(0.38, 0.03, 0.35)
+	blanket.mesh = blm
+	blanket.material_override = blanket_mat
+	blanket.position = Vector3(0, 0.19, -0.12)
+	add_child(blanket)
+
+	# Kopfteil
+	var headboard := MeshInstance3D.new()
+	var hm := BoxMesh.new()
+	hm.size = Vector3(0.45, 0.2, 0.04)
+	headboard.mesh = hm
+	headboard.material_override = frame_mat
+	headboard.position = Vector3(0, 0.2, 0.35)
+	add_child(headboard)
+
+
+func _build_fence() -> void:
+	# ZAUN: Helle Holzpfosten mit spitzen Enden
+	var light_wood := StandardMaterial3D.new()
+	light_wood.albedo_color = Color(0.6, 0.45, 0.25, 1)  # Helles Holz
+	var dark_wood := StandardMaterial3D.new()
+	dark_wood.albedo_color = Color(0.4, 0.25, 0.12, 1)
+
+	# 3 spitze Pfosten
+	for i in range(3):
+		var post := MeshInstance3D.new()
+		var pm := BoxMesh.new()
+		pm.size = Vector3(0.05, 0.5, 0.05)
+		post.mesh = pm
+		post.material_override = light_wood
+		post.position = Vector3((i - 1) * 0.22, 0.25, 0)
+		add_child(post)
+
+		# Spitze
+		var tip := MeshInstance3D.new()
+		var tm := CylinderMesh.new()
+		tm.top_radius = 0.001
+		tm.bottom_radius = 0.035
+		tm.height = 0.08
+		tip.mesh = tm
+		tip.material_override = dark_wood
+		tip.position = Vector3((i - 1) * 0.22, 0.54, 0)
+		add_child(tip)
+
+	# 2 Querlatten
+	for y_pos in [0.18, 0.38]:
+		var rail := MeshInstance3D.new()
+		var rm := BoxMesh.new()
+		rm.size = Vector3(0.5, 0.04, 0.03)
+		rail.mesh = rm
+		rail.material_override = dark_wood
+		rail.position.y = y_pos
+		add_child(rail)
+
+
+func _build_wall_item() -> void:
+	# WAND: Große aufgestellte Holzplanken, gebündelt mit Seil
+	var plank_mat := StandardMaterial3D.new()
+	plank_mat.albedo_color = Color(0.55, 0.38, 0.2, 1)
+	var rope_mat := StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.7, 0.6, 0.4, 1)  # Helles Seil
+
+	# 5 stehende Planken
+	for i in range(5):
+		var plank := MeshInstance3D.new()
+		var pm := BoxMesh.new()
+		pm.size = Vector3(0.06, 0.55, 0.03)
+		plank.mesh = pm
+		plank.material_override = plank_mat
+		plank.position = Vector3((i - 2) * 0.07, 0.28, 0)
+		plank.rotation.z = randf_range(-0.05, 0.05)
+		add_child(plank)
+
+	# Seil drum
+	var rope := MeshInstance3D.new()
+	var rm := BoxMesh.new()
+	rm.size = Vector3(0.4, 0.025, 0.06)
+	rope.mesh = rm
+	rope.material_override = rope_mat
+	rope.position.y = 0.35
+	add_child(rope)
+
+	var rope2 := MeshInstance3D.new()
+	rope2.mesh = rm
+	rope2.material_override = rope_mat
+	rope2.position.y = 0.15
+	add_child(rope2)
+
+
+func _build_chest() -> void:
+	# TRUHE: Dunkelbraune Kiste mit goldenem Schloss und Metallbändern
+	var dark_wood := StandardMaterial3D.new()
+	dark_wood.albedo_color = Color(0.35, 0.2, 0.1, 1)
+	var gold_mat := StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(0.85, 0.7, 0.2, 1)  # Gold
+	gold_mat.metallic = 0.8
+	var band_mat := StandardMaterial3D.new()
+	band_mat.albedo_color = Color(0.3, 0.3, 0.28, 1)
+	band_mat.metallic = 0.5
+
+	# Kisten-Körper
+	var body_m := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.35, 0.22, 0.25)
+	body_m.mesh = bm
+	body_m.material_override = dark_wood
+	body_m.position.y = 0.11
+	add_child(body_m)
+
+	# Gewölbter Deckel
+	var lid := MeshInstance3D.new()
+	var lm := BoxMesh.new()
+	lm.size = Vector3(0.37, 0.06, 0.27)
+	lid.mesh = lm
+	lid.material_override = dark_wood
+	lid.position.y = 0.25
+	add_child(lid)
+
+	# Goldenes Schloss vorne
+	var lock := MeshInstance3D.new()
+	var lockm := BoxMesh.new()
+	lockm.size = Vector3(0.06, 0.08, 0.03)
+	lock.mesh = lockm
+	lock.material_override = gold_mat
+	lock.position = Vector3(0, 0.18, 0.14)
+	add_child(lock)
+
+	# Metallbänder
+	for x_pos in [-0.14, 0.14]:
+		var band := MeshInstance3D.new()
+		var bandm := BoxMesh.new()
+		bandm.size = Vector3(0.03, 0.28, 0.27)
+		band.mesh = bandm
+		band.material_override = band_mat
+		band.position = Vector3(x_pos, 0.14, 0)
+		add_child(band)

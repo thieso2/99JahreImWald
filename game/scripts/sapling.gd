@@ -187,5 +187,5 @@ func _convert_to_full_tree() -> void:
 	# tree_resource-Script zuweisen, damit der Baum fällbar wird
 	var tree_script: GDScript = preload("res://scripts/tree_resource.gd")
 	set_script(tree_script)
-	# tree_scale_factor für mittlere Größe
-	tree_scale_factor = 1.0
+	# tree_scale_factor für mittlere Größe (set() weil Variable erst im neuen Script existiert)
+	set("tree_scale_factor", 1.0)

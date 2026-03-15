@@ -23,15 +23,15 @@ var placed_positions: Array[Vector3] = []
 func _ready() -> void:
 	# Materialien vorbereiten
 	trunk_material = StandardMaterial3D.new()
-	trunk_material.albedo_color = Color(0.35, 0.22, 0.12, 1)
+	trunk_material.albedo_color = Color(0.42, 0.28, 0.16, 1)
 
-	# Verschiedene dunkle Grüntöne für Variation (wie im Roblox-Vorbild)
+	# Mischung aus Grün und Grau-Grün (wie im Roblox-Vorbild)
 	var green_colors := [
-		Color(0.08, 0.32, 0.1, 1),
-		Color(0.1, 0.36, 0.08, 1),
-		Color(0.06, 0.28, 0.12, 1),
-		Color(0.09, 0.3, 0.07, 1),
-		Color(0.12, 0.34, 0.1, 1),
+		Color(0.2, 0.45, 0.18, 1),
+		Color(0.25, 0.5, 0.2, 1),
+		Color(0.18, 0.4, 0.22, 1),
+		Color(0.35, 0.42, 0.3, 1),   # Grau-grün
+		Color(0.3, 0.38, 0.28, 1),   # Grau-grün
 	]
 	for color in green_colors:
 		var mat := StandardMaterial3D.new()
@@ -104,17 +104,32 @@ func _create_tree(rng: RandomNumberGenerator) -> StaticBody3D:
 	trunk_mesh_instance.position.y = trunk_mesh.height / 2.0
 	tree.add_child(trunk_mesh_instance)
 
-	# Blätterkrone – breiter und flacher (wie im Roblox-Vorbild)
+	# Blätterkrone – blockig wie im Roblox-Vorbild
+	var crown_mat: StandardMaterial3D = leaves_materials[rng.randi() % leaves_materials.size()]
+
+	# Hauptkrone (große Box, leicht abgerundet wirkend)
+	var crown_width: float = rng.randf_range(3.0, 5.0)
+	var crown_height: float = rng.randf_range(2.5, 4.0)
+	var crown_depth: float = rng.randf_range(3.0, 5.0)
+
 	var leaves_mesh_instance := MeshInstance3D.new()
 	leaves_mesh_instance.name = "Leaves"
-	var leaves_mesh := SphereMesh.new()
-	var crown_radius := rng.randf_range(2.0, 3.5)
-	leaves_mesh.radius = crown_radius
-	leaves_mesh.height = crown_radius * 1.2  # Flacher als eine Kugel
+	var leaves_mesh := BoxMesh.new()
+	leaves_mesh.size = Vector3(crown_width, crown_height, crown_depth)
 	leaves_mesh_instance.mesh = leaves_mesh
-	leaves_mesh_instance.material_override = leaves_materials[rng.randi() % leaves_materials.size()]
-	leaves_mesh_instance.position.y = trunk_mesh.height + crown_radius * 0.3
+	leaves_mesh_instance.material_override = crown_mat
+	leaves_mesh_instance.position.y = trunk_mesh.height + crown_height * 0.4
 	tree.add_child(leaves_mesh_instance)
+
+	# Zweite kleinere Box oben drauf (für mehr Volumen)
+	var top_leaves := MeshInstance3D.new()
+	var top_mesh := BoxMesh.new()
+	top_mesh.size = Vector3(crown_width * 0.7, crown_height * 0.5, crown_depth * 0.7)
+	top_leaves.mesh = top_mesh
+	top_leaves.material_override = crown_mat
+	top_leaves.position.y = trunk_mesh.height + crown_height * 0.85
+	top_leaves.rotation.y = rng.randf_range(-0.3, 0.3)
+	tree.add_child(top_leaves)
 
 	# Kollision (Stamm)
 	var collision := CollisionShape3D.new()

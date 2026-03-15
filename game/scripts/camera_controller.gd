@@ -45,10 +45,10 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	var shift_held := Input.is_key_pressed(KEY_SHIFT)
+	var ctrl_held := Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
 
-	if shift_held:
-		# Shift + Pfeiltasten: Kamera-Winkel und Abstand
+	if ctrl_held:
+		# Ctrl + Pfeiltasten: Kamera-Winkel und Abstand
 		if Input.is_key_pressed(KEY_UP):
 			distance = clampf(distance - zoom_speed_key * delta, min_distance, max_distance)
 		if Input.is_key_pressed(KEY_DOWN):

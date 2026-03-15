@@ -319,3 +319,37 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - Item-Icons: Holz (braun) und Setzling (grün)
 - Item-Name unter dem ausgewählten Slot
 - Slot-Nummern in der Ecke
+
+---
+
+## 2026-03-11 – Fackel-System
+
+### Fackel bauen & benutzen
+- **Crafting:** 3 Holz → 1 Fackel (wie vorher), Fackel landet jetzt als Item im Inventar
+- **T-Taste:** Fackel anzünden / ausmachen (Toggle)
+- Fackel ist **sichtbar in der linken Hand** des Spielers (prozedurales Modell)
+- **Lichtquelle:** OmniLight3D mit Reichweite 10m, warme Farbe, Schatten, Flacker-Effekt
+- Flammen-Mesh: Doppelte Kugel (solide + transparent) für Volumen-Effekt
+
+### Hirsch flieht vor Fackel
+- Hirsch erkennt aktive Fackel im Radius von 12m
+- Beim Jagen: sofortige Flucht wenn Spieler Fackel aktiviert
+- Beim Roaming: Spieler mit Fackel wird nicht angegriffen
+- Flucht-Geschwindigkeit = Jagd-Geschwindigkeit (schneller als normales Laufen)
+- Fluchtrichtung: Vom Spieler weg (nicht vom Lagerfeuer)
+
+### Inventar-Integration
+- Fackel erscheint im Inventar als oranges Icon (Stiel + Flamme)
+- Kann mit G-Taste abgelegt werden (deaktiviert Fackel automatisch)
+- Item-Name "Fackel" unter ausgewähltem Slot
+
+### Tastenbelegung (aktualisiert)
+| Taste | Aktion |
+|-------|--------|
+| Q | Axt ziehen / wegstecken |
+| T | Fackel anzünden / ausmachen |
+| E | Aufsammeln / Baum hacken |
+| F | Setzling pflanzen |
+| G | Ausgewähltes Item ablegen |
+| Tab / Shift+Tab | Inventory Slot wechseln |
+| 1-9 | Direkt zum Inventory Slot |
