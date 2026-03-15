@@ -1,0 +1,59 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "e40a16a98034",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 26,
+  "files_touched": [
+    ".gitignore",
+    "CLAUDE.md",
+    "PROGRESS.md",
+    "game-design.md",
+    "game/project.godot",
+    "game/scenes/main.tscn",
+    "game/scripts/ambient_music.gd",
+    "game/scripts/axe_item.gd",
+    "game/scripts/bat_enemy.gd",
+    "game/scripts/camera_controller.gd",
+    "game/scripts/campfire.gd",
+    "game/scripts/cave.gd",
+    "game/scripts/cheat_menu.gd",
+    "game/scripts/cultist_enemy.gd",
+    "game/scripts/day_night_cycle.gd",
+    "game/scripts/deer_model.gd",
+    "game/scripts/deer_monster.gd",
+    "game/scripts/dropped_item.gd",
+    "game/scripts/footstep_sounds.gd",
+    "game/scripts/forest_generator.gd",
+    "game/scripts/game_manager.gd",
+    "game/scripts/game_sounds.gd",
+    "game/scripts/inventory_bar.gd",
+    "game/scripts/joystick_visual.gd",
+    "game/scripts/landscape_generator.gd",
+    "game/scripts/minimap.gd",
+    "game/scripts/placeable_item.gd",
+    "game/scripts/player.gd",
+    "game/scripts/player_model.gd",
+    "game/scripts/sapling.gd",
+    "game/scripts/torch_item.gd",
+    "game/scripts/touch_joystick.gd",
+    "game/scripts/tree_resource.gd",
+    "game/scripts/workbench_menu.gd"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e4/0a16a98034/0/metadata.json",
+      "transcript": "/e4/0a16a98034/0/full.jsonl",
+      "context": "/e4/0a16a98034/0/context.md",
+      "content_hash": "/e4/0a16a98034/0/content_hash.txt",
+      "prompt": "/e4/0a16a98034/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 768,
+    "cache_creation_tokens": 950565,
+    "cache_read_tokens": 97264550,
+    "output_tokens": 349224,
+    "api_call_count": 616
+  }
+}
