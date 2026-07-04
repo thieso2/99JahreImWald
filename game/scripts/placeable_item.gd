@@ -12,6 +12,7 @@ var metal_mat: StandardMaterial3D
 
 
 func _ready() -> void:
+	add_to_group("placeable")  # Für das Speichersystem
 	_create_materials()
 	match item_type:
 		"bed":

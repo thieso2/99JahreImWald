@@ -3,6 +3,10 @@ extends Node3D
 # Game Manager – steuert den Spielablauf
 
 @export var total_nights: int = 99
+const NIGHTS_PER_CHILD: int = 20  # Jedes gerettete Kind verkürzt die Nächte
+var children_rescued: int = 0
+var rescued_spots: Array = []  # Indizes der bereits geretteten Kinder (für Speicherstand)
+var save_system: Node = null
 
 # Referenzen
 @onready var player: CharacterBody3D = $Player
@@ -40,6 +44,22 @@ var deer_active: bool = false
 
 
 func _ready() -> void:
+	# Speichersystem zuerst – Spielstand lesen bevor die Welt aufgebaut wird
+	var save_script: GDScript = preload("res://scripts/save_system.gd")
+	save_system = Node.new()
+	save_system.set_script(save_script)
+	save_system.name = "SaveSystem"
+	add_child(save_system)
+	var save_data: Dictionary = save_system.read_save()
+
+	# Welt-Fortschritt wiederherstellen (vor dem Kinder-Spawn!)
+	var saved_world: Dictionary = save_data.get("world", {})
+	if not saved_world.is_empty():
+		total_nights = int(saved_world.get("total_nights", total_nights))
+		children_rescued = int(saved_world.get("children_rescued", 0))
+		for idx in saved_world.get("rescued_spots", []):
+			rescued_spots.append(int(idx))
+
 	# Landschaft generieren
 	var landscape_script: GDScript = preload("res://scripts/landscape_generator.gd")
 	var landscape := Node3D.new()
@@ -76,6 +96,9 @@ func _ready() -> void:
 	return_portal.arrival_message = "Zurück im Wald!"
 	add_child(return_portal)
 	return_portal.player_teleported.connect(_on_portal_teleported)
+
+	# Die 4 vermissten Kinder in den Ecken der Unterwelt verstecken
+	_spawn_lost_children()
 
 	# Tiere spawnen: Hasen (friedlich) und Wölfe (feindlich)
 	_spawn_animals()
@@ -184,6 +207,35 @@ func _ready() -> void:
 
 	_show_message("Q=Axt, T=Fackel, E=Hacken/Sammeln, F=Pflanzen, G=Ablegen, P=Platzieren, B=Werkbank")
 
+	# Spielstand anwenden (Spieler-Position, Inventar, Tag/Zeit, platzierte Items)
+	save_system.game_manager = self
+	save_system.player = player
+	save_system.day_night = day_night
+	save_system.apply_save(save_data)
+
+	# Wenn mitten in der Nacht geladen wurde: Hirsch direkt aktivieren
+	if day_night.is_night and not deer_active:
+		deer.activate(player, campfire.global_position)
+		deer_active = true
+
+	if not save_data.is_empty():
+		_show_message("Spielstand geladen! Weiter geht's an Tag %d." % day_night.current_day, 3.0)
+
+
+func reset_game() -> void:
+	# Speicherstand löschen und Spiel komplett neu starten
+	if save_system:
+		save_system.delete_save()
+		save_system.game_manager = null  # Autosave stoppen
+	get_tree().reload_current_scene()
+
+
+func _notification(what: int) -> void:
+	# Beim Schließen des Spiels speichern
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		if save_system:
+			save_system.save_game()
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("action_chop"):
@@ -247,7 +299,7 @@ func _on_night_started(day: int) -> void:
 
 func _on_day_started(day: int) -> void:
 	if day >= total_nights:
-		_show_message("Du hast alle 99 Nächte überlebt! GEWONNEN!", 10.0)
+		_show_message("Du hast alle %d Nächte überlebt! GEWONNEN!" % total_nights, 10.0)
 	else:
 		_show_message("Tag %d – der Hirsch zieht sich zurück." % day, 3.0)
 	deer.deactivate()
@@ -255,7 +307,7 @@ func _on_day_started(day: int) -> void:
 
 
 func _on_time_changed(time: float, day: int) -> void:
-	day_label.text = "Tag %d / %d" % [day, total_nights]
+	day_label.text = "Tag %d / %d  |  Kinder %d/4" % [day, total_nights, children_rescued]
 	time_label.text = day_night.get_time_of_day_string()
 
 
@@ -284,10 +336,83 @@ func _on_torch_toggle_pressed() -> void:
 
 
 func _on_action_pressed() -> void:
-	# E-Taste: Erst versuchen Items aufzusammeln, dann Baum hacken
+	# E-Taste: Kind retten → Items aufsammeln → Tier angreifen → Baum hacken
+	if _try_rescue_child():
+		return
 	if _try_pickup_nearby():
 		return
 	_on_harvest_pressed()
+
+
+const CHILD_COLORS: Array = [
+	Color(0.85, 0.3, 0.25, 1),   # Rot
+	Color(0.25, 0.5, 0.9, 1),    # Blau
+	Color(0.9, 0.8, 0.2, 1),     # Gelb
+	Color(0.9, 0.4, 0.7, 1),     # Rosa
+]
+
+
+func _spawn_lost_children() -> void:
+	# 4 Kinder in den Ecken der Unterwelt, jedes mit eigener Hemdfarbe
+	# Bereits gerettete Kinder (aus dem Speicherstand) sitzen am Lagerfeuer
+	var child_script: GDScript = preload("res://scripts/lost_child.gd")
+	var spots: Array = [
+		Vector3(-29.0, -100.0, -29.0),
+		Vector3(30.0, -100.0, -27.0),
+		Vector3(-27.0, -100.0, 29.0),
+		Vector3(29.0, -100.0, 30.0),
+	]
+	for i in range(4):
+		if i in rescued_spots:
+			_spawn_saved_child(i)
+			continue
+		var lost_child := Node3D.new()
+		lost_child.set_script(child_script)
+		lost_child.name = "VermisstesKind%d" % i
+		lost_child.position = spots[i]
+		lost_child.shirt_color = CHILD_COLORS[i]
+		add_child(lost_child)
+		lost_child.rescued.connect(_on_child_rescued.bind(i))
+
+
+func _spawn_saved_child(spot_index: int) -> void:
+	# Gerettetes Kind sitzt am Lagerfeuer
+	var child_script: GDScript = preload("res://scripts/lost_child.gd")
+	var saved_spots: Array = [
+		Vector3(2.5, 0, 2.0), Vector3(-2.5, 0, 2.0),
+		Vector3(2.0, 0, -2.5), Vector3(-2.0, 0, -2.5),
+	]
+	var saved_child := Node3D.new()
+	saved_child.set_script(child_script)
+	saved_child.name = "GerettetesKind%d" % spot_index
+	saved_child.saved_mode = true
+	saved_child.shirt_color = CHILD_COLORS[spot_index]
+	saved_child.position = saved_spots[spot_index % 4]
+	add_child(saved_child)
+
+
+func _try_rescue_child() -> bool:
+	var lost_children: Array = get_tree().get_nodes_in_group("lost_child")
+	for lost_child in lost_children:
+		if lost_child.has_method("try_rescue"):
+			if lost_child.try_rescue(player):
+				return true
+	return false
+
+
+func _on_child_rescued(spot_index: int) -> void:
+	children_rescued += 1
+	rescued_spots.append(spot_index)
+	total_nights = max(total_nights - NIGHTS_PER_CHILD, 1)
+
+	_spawn_saved_child(spot_index)
+	if save_system:
+		save_system.save_game()
+
+	if children_rescued >= 4:
+		_show_message("ALLE 4 KINDER GERETTET! Nur noch %d Nächte überleben!" % total_nights, 6.0)
+	else:
+		_show_message("Kind gerettet! (%d/4) Es wartet am Lagerfeuer. Nur noch %d Nächte!" % [children_rescued, total_nights], 4.0)
 
 
 func _spawn_animals() -> void:

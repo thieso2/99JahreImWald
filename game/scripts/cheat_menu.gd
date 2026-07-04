@@ -100,6 +100,15 @@ func _ready() -> void:
 	var btn_tp_underworld := _add_button(vbox, "In die Unterwelt teleportieren")
 	btn_tp_underworld.pressed.connect(_teleport_to_underworld)
 
+	# Separator
+	var sep4 := HSeparator.new()
+	vbox.add_child(sep4)
+
+	# Spiel zurücksetzen
+	var btn_reset := _add_button(vbox, "SPIEL ZURÜCKSETZEN")
+	btn_reset.add_theme_color_override("font_color", Color(1, 0.3, 0.3, 1))
+	btn_reset.pressed.connect(_reset_game)
+
 	# Position: oben links
 	anchor_left = 0.0
 	anchor_top = 0.0
@@ -211,6 +220,12 @@ func _teleport_to_portal() -> void:
 		player.global_position = portal.global_position + Vector3(0, 1, 5)
 	else:
 		player.global_position = Vector3(40, 1, -25)
+
+
+func _reset_game() -> void:
+	var gm: Node = get_tree().current_scene
+	if gm and gm.has_method("reset_game"):
+		gm.reset_game()
 
 
 func _teleport_to_underworld() -> void:
