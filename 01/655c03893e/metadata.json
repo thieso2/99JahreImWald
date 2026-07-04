@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "01655c03893e",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "game/scripts/cheat_menu.gd",
+    "game/scripts/game_manager.gd",
+    "game/scripts/lost_child.gd",
+    "game/scripts/placeable_item.gd",
+    "game/scripts/save_system.gd",
+    "game/scripts/underground_world.gd"
+  ],
+  "sessions": [
+    {
+      "metadata": "/01/655c03893e/0/metadata.json",
+      "transcript": "/01/655c03893e/0/full.jsonl",
+      "content_hash": "/01/655c03893e/0/content_hash.txt",
+      "prompt": "/01/655c03893e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1163,
+    "cache_creation_tokens": 47540,
+    "cache_read_tokens": 8101755,
+    "output_tokens": 40447,
+    "api_call_count": 39
+  }
+}

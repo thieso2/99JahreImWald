@@ -1,0 +1,77 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "01655c03893e",
+  "session_id": "805fd9e5-3cf1-4ab0-b60b-8c463947c581",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T15:22:40.368269Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "game/scripts/cheat_menu.gd",
+    "game/scripts/game_manager.gd",
+    "game/scripts/lost_child.gd",
+    "game/scripts/placeable_item.gd",
+    "game/scripts/save_system.gd",
+    "game/scripts/underground_world.gd"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "a042f9db755d",
+  "checkpoint_transcript_start": 722,
+  "transcript_lines_at_start": 722,
+  "token_usage": {
+    "input_tokens": 1163,
+    "cache_creation_tokens": 47540,
+    "cache_read_tokens": 8101755,
+    "output_tokens": 40447,
+    "api_call_count": 39
+  },
+  "session_metrics": {
+    "turn_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T15:22:40.343431Z",
+    "agent_lines": 686,
+    "agent_removed": 12,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 686,
+    "total_lines_changed": 698,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 91,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 7
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 7,
+      "user_lines_removed": 0,
+      "agent_lines_added": 799,
+      "agent_lines_removed": 12,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 7
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 7,
+      "user_lines_removed": 0,
+      "agent_lines_added": 920,
+      "agent_lines_removed": 16,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 7
+      }
+    }
+  ]
+}
