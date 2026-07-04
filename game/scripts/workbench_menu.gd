@@ -138,6 +138,16 @@ func _process(_delta: float) -> void:
 		_update_buttons()
 
 
+func toggle_menu() -> void:
+	# Für den Touch-Button (gleiche Logik wie die B-Taste)
+	if is_near_workbench:
+		visible = not visible
+		if visible:
+			_update_buttons()
+	elif visible:
+		visible = false
+
+
 func set_near_workbench(near: bool) -> void:
 	is_near_workbench = near
 	if not near and visible:

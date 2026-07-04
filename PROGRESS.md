@@ -526,3 +526,25 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - Nachthimmel heller (0.18/0.18/0.35)
 - Tag: Mittagshelligkeit 1.0 → 1.25, Morgen startet bei 0.65 statt 0.5
 - Umgebungslicht: Faktor 0.7 → 0.9 mit Mindestwert 0.35 (Texturen bleiben immer sichtbar)
+
+---
+
+## 2026-07-04 – Touch-Steuerung fürs iPad
+
+### Neue kontextabhängige Touch-Buttons (per Code im game_manager erstellt)
+- **Rechter Button-Stapel** (über den bestehenden Buttons):
+  - "Fackel an/aus [T]" – sichtbar wenn der Spieler eine Fackel hat
+  - "Braten [C]" – sichtbar am Lagerfeuer mit rohem Fleisch
+  - "Essen [V]" – sichtbar mit gebratenem Fleisch und HP < max
+  - "Platzieren [P]" – sichtbar wenn das ausgewählte Item platzierbar ist
+- **"Werkbank öffnen [B]"** – unten Mitte, nur in Werkbank-Nähe (neue Methode `workbench_menu.toggle_menu()`)
+- **"?"-Button** – oben rechts, öffnet das Hilfe-Fenster
+- Alle Buttons mind. 44pt hoch (Apple-Richtlinie für Touch-Ziele)
+
+### Hotbar antippbar (`inventory_bar.gd`)
+- Slots per Touch/Klick auswählbar (`_gui_input` mit Slot-Berechnung aus der Position)
+- Kinder-Controls auf `MOUSE_FILTER_IGNORE`, damit die Leiste die Taps bekommt
+
+### iPad-Check
+- project.godot war schon iPad-ready: Viewport 1194x834, Landscape, canvas_items-Stretch, Mobile-Renderer
+- Bestehende Touch-Features: Joystick (links), Kamera-Drag (rechts), Pinch-Zoom, antippbare Minimap

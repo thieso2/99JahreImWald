@@ -42,6 +42,15 @@ var minimap: Control = null
 var message_timer: float = 0.0
 var deer_active: bool = false
 
+# Touch-Buttons (per Code erstellt, kontextabhängig sichtbar)
+var help_menu: PanelContainer = null
+var torch_button: Button = null
+var cook_button: Button = null
+var eat_button: Button = null
+var place_button: Button = null
+var workbench_button: Button = null
+var help_button: Button = null
+
 
 func _ready() -> void:
 	# Speichersystem zuerst – Spielstand lesen bevor die Welt aufgebaut wird
@@ -147,10 +156,13 @@ func _ready() -> void:
 
 	# Hilfe-Menü erstellen (? zum Öffnen)
 	var help_script: GDScript = preload("res://scripts/help_menu.gd")
-	var help_menu := PanelContainer.new()
+	help_menu = PanelContainer.new()
 	help_menu.set_script(help_script)
 	help_menu.name = "HelpMenu"
 	hud.add_child(help_menu)
+
+	# Touch-Buttons für iPad (kontextabhängig sichtbar)
+	_create_touch_buttons()
 
 	# Signale verbinden
 	player.hp_changed.connect(_on_hp_changed)
@@ -553,6 +565,78 @@ func _on_axe_toggle_pressed() -> void:
 		axe_button.text = "Axt ziehen"
 
 
+func _make_touch_button(text: String, offset_y: float) -> Button:
+	# Button im rechten Stapel (wie die bestehenden HUD-Buttons aus der Szene)
+	var btn := Button.new()
+	btn.text = text
+	btn.visible = false
+	btn.anchor_left = 1.0
+	btn.anchor_top = 1.0
+	btn.anchor_right = 1.0
+	btn.anchor_bottom = 1.0
+	btn.offset_left = -220.0
+	btn.offset_top = offset_y
+	btn.offset_right = -20.0
+	btn.offset_bottom = offset_y + 44.0
+	btn.add_theme_font_size_override("font_size", 15)
+	hud.add_child(btn)
+	return btn
+
+
+func _create_touch_buttons() -> void:
+	# Rechter Stapel: über den bestehenden Buttons (Plant endet bei -300)
+	torch_button = _make_touch_button("Fackel an/aus [T]", -360.0)
+	torch_button.pressed.connect(_on_torch_toggle_pressed)
+
+	cook_button = _make_touch_button("Braten [C]", -420.0)
+	cook_button.pressed.connect(_on_cook_pressed)
+
+	eat_button = _make_touch_button("Essen [V]", -480.0)
+	eat_button.pressed.connect(_on_eat_pressed)
+
+	place_button = _make_touch_button("Platzieren [P]", -540.0)
+	place_button.pressed.connect(_on_place_pressed)
+
+	# Werkbank-Button: unten Mitte, über der Hotbar (nur in Werkbank-Nähe)
+	workbench_button = Button.new()
+	workbench_button.text = "Werkbank öffnen [B]"
+	workbench_button.visible = false
+	workbench_button.anchor_left = 0.5
+	workbench_button.anchor_right = 0.5
+	workbench_button.anchor_top = 1.0
+	workbench_button.anchor_bottom = 1.0
+	workbench_button.offset_left = -110.0
+	workbench_button.offset_right = 110.0
+	workbench_button.offset_top = -150.0
+	workbench_button.offset_bottom = -106.0
+	workbench_button.add_theme_font_size_override("font_size", 15)
+	workbench_button.pressed.connect(_on_workbench_button_pressed)
+	hud.add_child(workbench_button)
+
+	# Hilfe-Button: oben rechts, immer sichtbar
+	help_button = Button.new()
+	help_button.text = "?"
+	help_button.anchor_left = 1.0
+	help_button.anchor_right = 1.0
+	help_button.offset_left = -64.0
+	help_button.offset_top = 16.0
+	help_button.offset_right = -16.0
+	help_button.offset_bottom = 64.0
+	help_button.add_theme_font_size_override("font_size", 24)
+	help_button.pressed.connect(_on_help_button_pressed)
+	hud.add_child(help_button)
+
+
+func _on_workbench_button_pressed() -> void:
+	if workbench_menu:
+		workbench_menu.toggle_menu()
+
+
+func _on_help_button_pressed() -> void:
+	if help_menu:
+		help_menu.visible = not help_menu.visible
+
+
 func _update_action_buttons() -> void:
 	# Hack-Button: sichtbar wenn Baum in der Nähe und Axt aktiv
 	var near_tree := false
@@ -578,6 +662,38 @@ func _update_action_buttons() -> void:
 
 	# Drop-Button: sichtbar wenn Inventar nicht leer
 	drop_button.visible = player.inventory.size() > 0
+
+	# Fackel-Button: sichtbar wenn der Spieler eine Fackel hat
+	if torch_button:
+		torch_button.visible = player.has_torch
+		torch_button.text = "Fackel aus [T]" if player.torch_active else "Fackel an [T]"
+
+	# Braten-Button: am Lagerfeuer mit rohem Fleisch
+	if cook_button:
+		var has_raw: bool = false
+		for item in player.inventory:
+			if item in COOK_MAP:
+				has_raw = true
+				break
+		cook_button.visible = player.is_near_campfire and has_raw
+
+	# Essen-Button: gebratenes Fleisch dabei und nicht volle HP
+	if eat_button:
+		var has_food: bool = false
+		for item in player.inventory:
+			if item in FOOD_HEAL:
+				has_food = true
+				break
+		eat_button.visible = has_food and player.hp < player.max_hp
+
+	# Platzieren-Button: ausgewähltes Item ist platzierbar
+	if place_button and inventory_bar:
+		var sel_item: String = inventory_bar.get_selected_item()
+		place_button.visible = sel_item in ["bed", "fence", "wall", "chest"]
+
+	# Werkbank-Button: in Werkbank-Nähe
+	if workbench_button and workbench_menu:
+		workbench_button.visible = workbench_menu.is_near_workbench and not workbench_menu.visible
 
 
 func _update_hp_bar(hp: float) -> void:

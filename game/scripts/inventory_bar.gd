@@ -51,6 +51,36 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 
 
+func _gui_input(event: InputEvent) -> void:
+	# Slot antippen/anklicken zum Auswählen (Touch + Maus)
+	var tap_pos: Vector2 = Vector2.ZERO
+	var tapped: bool = false
+	if event is InputEventScreenTouch and event.pressed:
+		tap_pos = event.position
+		tapped = true
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		tap_pos = event.position
+		tapped = true
+	if not tapped or inventory_ref.size() == 0:
+		return
+
+	var slot: int = int((tap_pos.x - BAR_PADDING) / (SLOT_SIZE + SLOT_MARGIN))
+	var visible_count: int = min(inventory_ref.size(), MAX_VISIBLE_SLOTS)
+	if slot < 0 or slot >= visible_count:
+		return
+	var inv_idx: int = _get_start_index() + slot
+	if inv_idx < inventory_ref.size():
+		selected_index = inv_idx
+		_rebuild_slots()
+		accept_event()
+
+
+func _get_start_index() -> int:
+	if inventory_ref.size() <= MAX_VISIBLE_SLOTS:
+		return 0
+	return clampi(selected_index - MAX_VISIBLE_SLOTS / 2, 0, inventory_ref.size() - MAX_VISIBLE_SLOTS)
+
+
 func set_inventory(inv: Array) -> void:
 	inventory_ref = inv
 	_rebuild_slots()
@@ -99,6 +129,7 @@ func _rebuild_slots() -> void:
 	if item_count == 0:
 		# Leere Inventarleiste mit 1 leeren Slot zeigen
 		_build_empty_bar()
+		_ignore_child_mouse()
 		return
 
 	# Clamp selected_index
@@ -160,6 +191,15 @@ func _rebuild_slots() -> void:
 		num_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 0.5))
 		add_child(num_label)
 		slot_containers.append(num_label)
+
+	_ignore_child_mouse()
+
+
+func _ignore_child_mouse() -> void:
+	# Kinder dürfen Taps nicht schlucken – die Leiste selbst wertet sie aus (_gui_input)
+	for c in slot_containers:
+		if is_instance_valid(c) and c is Control:
+			c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func _build_empty_bar() -> void:
