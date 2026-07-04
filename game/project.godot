@@ -87,3 +87,9 @@ action_toggle_torch={
 [rendering]
 
 renderer/rendering_method="mobile"
+
+[xogot]
+
+project/editorState=[]
+project/breakpoints={}
+project/disabled_breakpoints={}

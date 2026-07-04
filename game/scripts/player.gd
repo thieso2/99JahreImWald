@@ -433,3 +433,47 @@ func try_chop_tree() -> Dictionary:
 		# Holz kommt jetzt durch aufsammelbare Drops, nicht direkt
 
 	return result
+
+
+func try_attack_animal() -> Dictionary:
+	# Gibt {"attacked": bool, "killed": bool, "animal_name": String} zurück
+	var result := {"attacked": false, "killed": false, "animal_name": ""}
+
+	if not axe_active or chop_cooldown > 0:
+		return result
+
+	# Nächstes Tier in Reichweite finden
+	var animals: Array = get_tree().get_nodes_in_group("animal")
+	var nearest_animal: Node = null
+	var nearest_dist: float = 999.0
+
+	for animal in animals:
+		if animal.has_method("take_damage"):
+			var dist: float = global_position.distance_to(animal.global_position)
+			if dist < 3.0 and dist < nearest_dist:
+				nearest_dist = dist
+				nearest_animal = animal
+
+	if nearest_animal == null:
+		return result
+
+	# Zuschlagen!
+	chop_cooldown = get_chop_cooldown_time()
+
+	if player_model:
+		player_model.play_chop()
+
+	# Spieler zum Tier drehen
+	var dir_to_animal: Vector3 = nearest_animal.global_position - global_position
+	dir_to_animal.y = 0
+	if dir_to_animal.length() > 0.1:
+		rotation.y = atan2(dir_to_animal.x, dir_to_animal.z)
+
+	nearest_animal.take_damage(get_axe_strength())
+	result.attacked = true
+	var animal_name: Variant = nearest_animal.get("animal_name")
+	result.animal_name = animal_name if animal_name != null else "Tier"
+	if nearest_animal.is_queued_for_deletion():
+		result.killed = true
+
+	return result

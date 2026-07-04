@@ -19,7 +19,7 @@ var sections: Array = [
 	]],
 	["Aktionen", [
 		["Q", "Axt ziehen / wegstecken"],
-		["E", "Aufsammeln / Baum hacken"],
+		["E", "Aufsammeln / Hacken / Tier angreifen"],
 		["F", "Setzling pflanzen"],
 		["G", "Ausgewähltes Item ablegen"],
 		["T", "Fackel anzünden / ausmachen"],

@@ -58,6 +58,9 @@ func _ready() -> void:
 	# Loch im Boden für die Höhle
 	_cut_ground_hole(cave.position)
 
+	# Tiere spawnen: Hasen (friedlich) und Wölfe (feindlich)
+	_spawn_animals()
+
 	# Sound-System erstellen
 	var sounds_script: GDScript = preload("res://scripts/game_sounds.gd")
 	game_sounds = Node.new()
@@ -268,8 +271,44 @@ func _on_action_pressed() -> void:
 	_on_harvest_pressed()
 
 
+func _spawn_animals() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 77  # Fester Seed für konsistente Positionen
+
+	# 6 Hasen im ganzen Wald verteilt
+	var rabbit_script: GDScript = preload("res://scripts/rabbit_animal.gd")
+	for i in range(6):
+		var rabbit := CharacterBody3D.new()
+		rabbit.set_script(rabbit_script)
+		rabbit.name = "Hase%d" % i
+		var angle: float = rng.randf() * TAU
+		var dist: float = rng.randf_range(12.0, 45.0)
+		rabbit.position = Vector3(cos(angle) * dist, 0.5, sin(angle) * dist)
+		add_child(rabbit)
+
+	# 3 Wölfe weiter draußen (nicht direkt am Camp)
+	var wolf_script: GDScript = preload("res://scripts/wolf_enemy.gd")
+	for i in range(3):
+		var wolf := CharacterBody3D.new()
+		wolf.set_script(wolf_script)
+		wolf.name = "Wolf%d" % i
+		var angle: float = rng.randf() * TAU
+		var dist: float = rng.randf_range(30.0, 60.0)
+		wolf.position = Vector3(cos(angle) * dist, 0.5, sin(angle) * dist)
+		add_child(wolf)
+
+
 func _on_harvest_pressed() -> void:
 	if player.axe_active:
+		# Erst versuchen ein Tier anzugreifen
+		var animal_result: Dictionary = player.try_attack_animal()
+		if animal_result.attacked:
+			if game_sounds:
+				game_sounds.play_chop_sound()
+			if animal_result.killed:
+				_show_message("%s erlegt! Sammle die Beute auf! [E]" % animal_result.animal_name, 2.0)
+			return
+
 		var result: Dictionary = player.try_chop_tree()
 		if result.chopped:
 			# Hack-Sound abspielen

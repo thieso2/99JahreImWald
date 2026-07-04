@@ -284,6 +284,33 @@ func _add_item_icon(slot_x: float, slot_y: float, item_type: String, is_selected
 			_icon_rect(cx - 12, cy - 8, 3, 22, Color(0.3, 0.3, 0.28))   # Band links
 			_icon_rect(cx + 9, cy - 8, 3, 22, Color(0.3, 0.3, 0.28))    # Band rechts
 
+		"meat_small":
+			# Fleischstückchen: kleiner rosa-roter Brocken mit Fett-Streifen
+			_icon_rect(cx - 8, cy - 6, 16, 14, Color(0.85, 0.35, 0.3))
+			_icon_rect(cx - 6, cy - 8, 12, 4, Color(0.95, 0.85, 0.75))
+
+		"meat_chunk":
+			# Fleischklumpen: großer dunkelroter Brocken mit Knochen
+			_icon_rect(cx - 11, cy - 6, 22, 16, Color(0.65, 0.2, 0.15))
+			_icon_rect(cx + 4, cy - 14, 4, 12, Color(0.95, 0.92, 0.85))  # Knochen
+			_icon_rect(cx + 2, cy - 17, 8, 5, Color(0.95, 0.92, 0.85))   # Knochen-Ende
+
+		"steak":
+			# Steak: flache braun-rote Scheibe mit Grillstreifen
+			_icon_rect(cx - 13, cy - 6, 26, 14, Color(0.55, 0.25, 0.15))
+			_icon_rect(cx - 11, cy - 3, 22, 2, Color(0.3, 0.12, 0.08))
+			_icon_rect(cx - 11, cy + 3, 22, 2, Color(0.3, 0.12, 0.08))
+
+		"rabbit_foot":
+			# Hasenfuß: kleiner Fuß mit heller Spitze
+			_icon_rect(cx - 8, cy - 4, 14, 8, Color(0.65, 0.55, 0.45))
+			_icon_rect(cx + 4, cy - 6, 8, 10, Color(0.85, 0.8, 0.75))
+
+		"wolf_pelt":
+			# Wolfspelz: graue Fell-Matte mit dunklem Streifen
+			_icon_rect(cx - 14, cy - 10, 28, 22, Color(0.35, 0.35, 0.38))
+			_icon_rect(cx - 5, cy - 10, 10, 22, Color(0.22, 0.22, 0.25))
+
 		_:
 			_icon_rect(slot_x + p, slot_y + p, s - p * 2, s - p * 2, Color(0.5, 0.45, 0.4))
 
@@ -297,6 +324,11 @@ func _add_item_icon(slot_x: float, slot_y: float, item_type: String, is_selected
 			"fence": name_de = "Zaun"
 			"wall": name_de = "Wand"
 			"chest": name_de = "Truhe"
+			"meat_small": name_de = "Fleischstückchen"
+			"meat_chunk": name_de = "Fleischklumpen"
+			"steak": name_de = "Steak"
+			"rabbit_foot": name_de = "Hasenfuß"
+			"wolf_pelt": name_de = "Wolfspelz"
 		var name_label := Label.new()
 		name_label.text = name_de
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

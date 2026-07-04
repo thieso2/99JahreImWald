@@ -365,3 +365,41 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - Gruppiert nach Abschnitten: Bewegung, Kamera, Aktionen, Inventar, Sonstiges
 - Stil passend zu Werkbank/Cheat-Menü (PanelContainer, zentriert, blauer Rahmen)
 - Einbindung im `game_manager._ready()` wie die anderen Menüs
+
+---
+
+## 2026-07-04 – Hasen & Wölfe
+
+### Hase (`rabbit_animal.gd`)
+- Friedliches Tier, hoppelt durch den Wald (kleine Sprünge, wackelnde Nase im Idle)
+- Flieht wenn der Spieler näher als 5m kommt
+- 1 HP → ein Axthieb erlegt ihn
+- **Drops:** 1-2 Fleischstückchen, 30% Chance auf einen Hasenfuß
+- Quiek-Laut beim Tod (prozedural)
+- Prozedurales Modell: graubraunes Fell, lange Ohren mit rosa Innenseite, weißer Puschel-Schwanz, große Hinterläufe
+
+### Wolf (`wolf_enemy.gd`)
+- Feindliches Tier mit KI-Zustandsmaschine (IDLE/PATROLLING/CHASING/ATTACKING)
+- Greift an wie der Hirsch: 20 Schaden, Erkennungsradius 10m
+- Respektiert die sichere Zone: bricht Verfolgung ab wenn Spieler am Lagerfeuer (`is_safe`)
+- 6 HP → 6 Hiebe mit Steinaxt, 3 mit Eisenaxt, 2 mit Stahlaxt
+- Wird aggressiv wenn er getroffen wird
+- **Drops:** 1 Steak + 2 Fleischklumpen, 25% Chance auf einen Wolfspelz
+- Knurren und Biss-Geräusche (prozedural)
+- Prozedurales Modell: graues Fell mit dunklem Rückenstreifen, leuchtende gelbe Augen, buschiger Schwanz, Trab-Animation (diagonale Beinpaare)
+
+### Tiere angreifen (E-Taste)
+- Neue Funktion `player.try_attack_animal()`: Tiere in Gruppe "animal" im Radius 3m
+- E-Taste-Priorität: Aufsammeln → Tier angreifen → Baum hacken
+- Axtstärke = Schaden (Stein 1, Eisen 2.5, Stahl 5)
+- Spieler dreht sich zum Tier, Hack-Animation und -Sound wie beim Baumfällen
+
+### Neue Items (Drops + Inventar-Icons + Namen)
+- **Fleischstückchen** (`meat_small`) – rosa Brocken mit Fettstreifen
+- **Fleischklumpen** (`meat_chunk`) – dunkelroter Brocken mit Knochen
+- **Steak** (`steak`) – flache Scheibe mit Grillstreifen
+- **Hasenfuß** (`rabbit_foot`) – kleiner Fuß mit heller Pfote
+- **Wolfspelz** (`wolf_pelt`) – graue Fellmatte mit Rückenstreifen
+
+### Spawning (`game_manager._spawn_animals()`)
+- 6 Hasen im Radius 12-45m, 3 Wölfe im Radius 30-60m (fester Seed 77)

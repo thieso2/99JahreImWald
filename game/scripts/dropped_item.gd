@@ -113,6 +113,11 @@ func _build_item_mesh() -> void:
 			"fence": _build_fence()
 			"wall": _build_wall_item()
 			"chest": _build_chest()
+			"meat_small": _build_meat_small()
+			"meat_chunk": _build_meat_chunk()
+			"steak": _build_steak()
+			"rabbit_foot": _build_rabbit_foot()
+			"wolf_pelt": _build_wolf_pelt()
 			_: _build_log()
 		return
 
@@ -413,6 +418,168 @@ func _build_wall_item() -> void:
 	rope2.material_override = rope_mat
 	rope2.position.y = 0.15
 	add_child(rope2)
+
+
+func _build_meat_small() -> void:
+	# FLEISCHSTÜCKCHEN: Kleiner rosa-roter Fleischbrocken
+	var meat_mat := StandardMaterial3D.new()
+	meat_mat.albedo_color = Color(0.85, 0.35, 0.3, 1)
+	var fat_mat := StandardMaterial3D.new()
+	fat_mat.albedo_color = Color(0.95, 0.85, 0.75, 1)
+
+	var meat := MeshInstance3D.new()
+	var mm := SphereMesh.new()
+	mm.radius = 0.12
+	mm.height = 0.2
+	meat.mesh = mm
+	meat.material_override = meat_mat
+	meat.position.y = 0.12
+	meat.scale = Vector3(1.2, 0.8, 1.0)
+	add_child(meat)
+
+	# Fett-Streifen
+	var fat := MeshInstance3D.new()
+	var fm := BoxMesh.new()
+	fm.size = Vector3(0.2, 0.03, 0.08)
+	fat.mesh = fm
+	fat.material_override = fat_mat
+	fat.position = Vector3(0, 0.2, 0)
+	fat.rotation.y = 0.4
+	add_child(fat)
+
+
+func _build_meat_chunk() -> void:
+	# FLEISCHKLUMPEN: Großer dunkelroter Brocken mit Knochen
+	var meat_mat := StandardMaterial3D.new()
+	meat_mat.albedo_color = Color(0.65, 0.2, 0.15, 1)
+	var bone_mat := StandardMaterial3D.new()
+	bone_mat.albedo_color = Color(0.95, 0.92, 0.85, 1)
+
+	var meat := MeshInstance3D.new()
+	var mm := SphereMesh.new()
+	mm.radius = 0.16
+	mm.height = 0.28
+	meat.mesh = mm
+	meat.material_override = meat_mat
+	meat.position.y = 0.15
+	meat.scale = Vector3(1.3, 0.9, 1.1)
+	add_child(meat)
+
+	# Herausragender Knochen
+	var bone := MeshInstance3D.new()
+	var bm := CylinderMesh.new()
+	bm.top_radius = 0.025
+	bm.bottom_radius = 0.025
+	bm.height = 0.25
+	bone.mesh = bm
+	bone.material_override = bone_mat
+	bone.position = Vector3(0.15, 0.22, 0)
+	bone.rotation.z = deg_to_rad(-60.0)
+	add_child(bone)
+
+	# Knochen-Ende (Kugel)
+	var knob := MeshInstance3D.new()
+	var km := SphereMesh.new()
+	km.radius = 0.04
+	km.height = 0.08
+	knob.mesh = km
+	knob.material_override = bone_mat
+	knob.position = Vector3(0.26, 0.28, 0)
+	add_child(knob)
+
+
+func _build_steak() -> void:
+	# STEAK: Flache braun-rote Scheibe mit Grillstreifen
+	var steak_mat := StandardMaterial3D.new()
+	steak_mat.albedo_color = Color(0.55, 0.25, 0.15, 1)
+	var stripe_mat := StandardMaterial3D.new()
+	stripe_mat.albedo_color = Color(0.3, 0.12, 0.08, 1)
+
+	var steak := MeshInstance3D.new()
+	var sm := CylinderMesh.new()
+	sm.top_radius = 0.16
+	sm.bottom_radius = 0.16
+	sm.height = 0.06
+	steak.mesh = sm
+	steak.material_override = steak_mat
+	steak.position.y = 0.1
+	steak.scale = Vector3(1.2, 1.0, 0.9)
+	add_child(steak)
+
+	# Grillstreifen
+	for i in range(2):
+		var stripe := MeshInstance3D.new()
+		var stm := BoxMesh.new()
+		stm.size = Vector3(0.28, 0.01, 0.03)
+		stripe.mesh = stm
+		stripe.material_override = stripe_mat
+		stripe.position = Vector3(0, 0.14, (i - 0.5) * 0.12)
+		add_child(stripe)
+
+
+func _build_rabbit_foot() -> void:
+	# HASENFUSS: Kleiner grau-brauner Fuß mit hellem Fell
+	var fur_mat := StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.65, 0.55, 0.45, 1)
+	var light_fur_mat := StandardMaterial3D.new()
+	light_fur_mat.albedo_color = Color(0.85, 0.8, 0.75, 1)
+
+	var foot := MeshInstance3D.new()
+	var fm := CapsuleMesh.new()
+	fm.radius = 0.05
+	fm.height = 0.25
+	foot.mesh = fm
+	foot.material_override = fur_mat
+	foot.position.y = 0.12
+	foot.rotation.z = deg_to_rad(70.0)
+	add_child(foot)
+
+	# Helle Pfoten-Spitze
+	var tip := MeshInstance3D.new()
+	var tm := SphereMesh.new()
+	tm.radius = 0.05
+	tm.height = 0.1
+	tip.mesh = tm
+	tip.material_override = light_fur_mat
+	tip.position = Vector3(0.12, 0.14, 0)
+	add_child(tip)
+
+
+func _build_wolf_pelt() -> void:
+	# WOLFSPELZ: Graue Fell-Matte, leicht gewellt
+	var fur_mat := StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.35, 0.35, 0.38, 1)
+	var dark_fur_mat := StandardMaterial3D.new()
+	dark_fur_mat.albedo_color = Color(0.22, 0.22, 0.25, 1)
+
+	# Fell-Matte
+	var pelt := MeshInstance3D.new()
+	var pm := BoxMesh.new()
+	pm.size = Vector3(0.4, 0.04, 0.5)
+	pelt.mesh = pm
+	pelt.material_override = fur_mat
+	pelt.position.y = 0.06
+	add_child(pelt)
+
+	# Dunkler Rücken-Streifen
+	var stripe := MeshInstance3D.new()
+	var sm := BoxMesh.new()
+	sm.size = Vector3(0.15, 0.05, 0.5)
+	stripe.mesh = sm
+	stripe.material_override = dark_fur_mat
+	stripe.position.y = 0.07
+	add_child(stripe)
+
+	# Schwanz-Ende
+	var tail_end := MeshInstance3D.new()
+	var tem := CapsuleMesh.new()
+	tem.radius = 0.04
+	tem.height = 0.2
+	tail_end.mesh = tem
+	tail_end.material_override = dark_fur_mat
+	tail_end.position = Vector3(0, 0.06, -0.3)
+	tail_end.rotation.x = deg_to_rad(90.0)
+	add_child(tail_end)
 
 
 func _build_chest() -> void:
