@@ -440,3 +440,49 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 
 ### Cheat-Menü angepasst
 - "Zum Portal teleportieren" und "In die Unterwelt teleportieren" statt der Höhlen-Teleports
+
+---
+
+## 2026-07-04 – Vermisste Kinder, bessere Unterwelt-Grafik & Speichersystem
+
+### Die 4 vermissten Kinder (`lost_child.gd`)
+- **Das Hauptziel des Spiels ist jetzt drin:** 4 Kinder sind in Holzkäfigen in den Ecken der Unterwelt versteckt
+- Jedes Kind hat eine eigene Hemdfarbe (rot, blau, gelb, rosa) mit leichtem Leuchten
+- **Leises Schluchzen** alle 5-10s als Audio-Hinweis zum Finden im Dunkeln
+- **E-Taste befreit** das Kind (Käfig verschwindet, fröhlicher Dreiklang erklingt)
+- **Jede Rettung verkürzt die Nächte um 20:** 99 → 79 → 59 → 39 → 19
+- Gerettete Kinder sitzen danach am Lagerfeuer
+- HUD zeigt jetzt "Tag X / Y | Kinder Z/4"
+
+### Bessere Unterwelt-Grafik
+- **Prozedurale Fels-Texturen:** FastNoiseLite + NoiseTexture2D (Albedo-Variation + Normal-Maps) mit Triplanar-Mapping – Wände/Boden/Decke sehen aus wie echter Fels statt flacher Farbflächen
+- **40 unregelmäßige Felsbrocken** entlang der Wände (verzerrte, rotierte Kugeln)
+- **30 Felsplatten** ragen aus dem Boden (bricht die ebene Fläche auf)
+- **22 Baumwurzeln** hängen von der Decke (mehrsegmentig, verjüngend – wir sind unter dem Wald!)
+- **120 schwebende Staubpartikel** (GPUParticles3D) mit leichtem Glühen
+- **Kristalle verbessert:** halbtransparent, glänzend (metallic/roughness), stärkere Emission
+
+### Speichersystem (`save_system.gd`)
+- **Autosave alle 10 Sekunden** + beim Schließen des Spiels (WM_CLOSE_REQUEST)
+- Datei: `user://savegame.json`
+- **Gespeichert wird:** Spieler-Position/Rotation/HP, Inventar, Holz/Setzling-Zähler, Axt (Stufe), Fackel, Tag/Uhrzeit/Nacht-Status, verkürzte Nächte, gerettete Kinder (welche!), platzierte Strukturen (Bett/Zaun/Wand/Truhe mit Position)
+- **Beim Start wird geladen:** Man steht wieder genau da, wo man aufgehört hat; gerettete Kinder sitzen am Lagerfeuer, ihre Käfige in der Unterwelt sind weg; nachts geladen → Hirsch sofort aktiv
+- **Reset:** Cheat-Menü (F1) → roter Button "SPIEL ZURÜCKSETZEN" löscht den Spielstand und startet neu
+- Platzierte Items sind jetzt in der Gruppe "placeable" (für das Speichersystem)
+
+---
+
+## 2026-07-04 – Unterwelt-Gegner besiegbar
+
+### Problem (Nutzer-Frage)
+- Kultisten und Fledermäuse waren mit der Axt NICHT angreifbar: nur Tiere in der Gruppe "animal" wurden getroffen
+- Fledermäuse hatten gar kein HP-System (unsterblich)
+
+### Lösung
+- **Kultisten:** in Gruppe "animal", HP von 40 auf 10 reduziert (10 Steinaxt / 4 Eisen / 2 Stahl), werden bei Treffern sofort aggressiv, droppen 1 **Kultisten-Edelstein** (neues Item, leuchtender lila Kristall)
+- **Fledermäuse:** 3 HP + take_damage() ergänzt (3 Steinaxt / 2 Eisen / 1 Stahl), droppen 1 Fleischstückchen. Angreifbar wenn sie zum Angriff heruntergeflogen kommen
+- E-Taste trifft jetzt alle Gegner in Reichweite (3m)
+
+### Bug-Fix: Drops in der Unterwelt
+- Gedroppte Items hatten die Ruhehöhe y=0.25 hart-codiert (Waldboden) → Drops in der Unterwelt wären zur Oberfläche teleportiert
+- Neue `rest_height`-Logik: Spawn unterhalb y=-50 → Ruhehöhe -99.75 (Unterwelt-Boden)

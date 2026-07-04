@@ -311,6 +311,13 @@ func _add_item_icon(slot_x: float, slot_y: float, item_type: String, is_selected
 			_icon_rect(cx - 14, cy - 10, 28, 22, Color(0.35, 0.35, 0.38))
 			_icon_rect(cx - 5, cy - 10, 10, 22, Color(0.22, 0.22, 0.25))
 
+		"cultist_gem":
+			# Kultisten-Edelstein: leuchtender lila Kristall (Raute)
+			_icon_rect(cx - 4, cy - 14, 8, 8, Color(0.7, 0.3, 0.9))
+			_icon_rect(cx - 8, cy - 6, 16, 10, Color(0.6, 0.2, 0.8))
+			_icon_rect(cx - 4, cy + 4, 8, 8, Color(0.5, 0.15, 0.7))
+			_icon_rect(cx - 2, cy - 8, 4, 6, Color(0.95, 0.8, 1.0))  # Glanzpunkt
+
 		_:
 			_icon_rect(slot_x + p, slot_y + p, s - p * 2, s - p * 2, Color(0.5, 0.45, 0.4))
 
@@ -329,6 +336,7 @@ func _add_item_icon(slot_x: float, slot_y: float, item_type: String, is_selected
 			"steak": name_de = "Steak"
 			"rabbit_foot": name_de = "Hasenfuß"
 			"wolf_pelt": name_de = "Wolfspelz"
+			"cultist_gem": name_de = "Kultisten-Edelstein"
 		var name_label := Label.new()
 		name_label.text = name_de
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

@@ -20,8 +20,14 @@ var sack_mat: StandardMaterial3D
 var tie_mat: StandardMaterial3D
 var icon_mat: StandardMaterial3D
 
+# Ruhehöhe: Waldboden (0) oder Unterwelt-Boden (-100)
+var rest_height: float = 0.25
+
 
 func _ready() -> void:
+	if position.y < -50.0:
+		rest_height = -99.75  # Unterwelt-Boden liegt bei y=-100
+
 	# Kollision für Nähe-Erkennung
 	var col := CollisionShape3D.new()
 	var shape := SphereShape3D.new()
@@ -51,15 +57,15 @@ func _process(delta: float) -> void:
 		position += fly_velocity * delta
 		# Rotation beim Fliegen
 		rotation.x += delta * 3.0
-		if position.y <= 0.25:
-			position.y = 0.25
+		if position.y <= rest_height:
+			position.y = rest_height
 			on_ground = true
 			can_pickup = true
 			fly_velocity = Vector3.ZERO
 			rotation.x = 0.0
 	else:
 		# Leichtes Schweben am Boden
-		position.y = 0.25 + sin(lifetime * 2.0 + bob_offset) * 0.06
+		position.y = rest_height + sin(lifetime * 2.0 + bob_offset) * 0.06
 		rotation.y += delta * 0.8
 
 	# Nach 90 Sekunden verschwinden
@@ -118,6 +124,7 @@ func _build_item_mesh() -> void:
 			"steak": _build_steak()
 			"rabbit_foot": _build_rabbit_foot()
 			"wolf_pelt": _build_wolf_pelt()
+			"cultist_gem": _build_cultist_gem()
 			_: _build_log()
 		return
 
@@ -543,6 +550,41 @@ func _build_rabbit_foot() -> void:
 	tip.material_override = light_fur_mat
 	tip.position = Vector3(0.12, 0.14, 0)
 	add_child(tip)
+
+
+func _build_cultist_gem() -> void:
+	# KULTISTEN-EDELSTEIN: Leuchtender lila Kristall
+	var gem_mat := StandardMaterial3D.new()
+	gem_mat.albedo_color = Color(0.7, 0.3, 0.9, 0.9)
+	gem_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	gem_mat.emission_enabled = true
+	gem_mat.emission = Color(0.6, 0.2, 0.8, 1)
+	gem_mat.emission_energy_multiplier = 1.5
+	gem_mat.metallic = 0.4
+	gem_mat.roughness = 0.1
+
+	# Kristall: zwei Pyramiden (oben + unten gespiegelt)
+	var top := MeshInstance3D.new()
+	var tm := CylinderMesh.new()
+	tm.top_radius = 0.001
+	tm.bottom_radius = 0.12
+	tm.height = 0.2
+	tm.radial_segments = 6
+	top.mesh = tm
+	top.material_override = gem_mat
+	top.position.y = 0.3
+	add_child(top)
+
+	var bottom := MeshInstance3D.new()
+	var bm := CylinderMesh.new()
+	bm.top_radius = 0.12
+	bm.bottom_radius = 0.001
+	bm.height = 0.15
+	bm.radial_segments = 6
+	bottom.mesh = bm
+	bottom.material_override = gem_mat
+	bottom.position.y = 0.125
+	add_child(bottom)
 
 
 func _build_wolf_pelt() -> void:

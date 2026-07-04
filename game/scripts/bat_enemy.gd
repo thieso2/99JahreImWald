@@ -9,6 +9,10 @@ extends CharacterBody3D
 @export var detection_range: float = 12.0
 @export var attack_range: float = 1.5
 @export var screech_interval: float = 4.0
+@export var max_hp: float = 3.0
+
+var hp: float = 3.0
+var animal_name: String = "Fledermaus"
 
 enum State { IDLE, SCREECHING, CHASING, ATTACKING }
 var current_state: State = State.IDLE
@@ -36,6 +40,8 @@ var eye_mat: StandardMaterial3D
 
 
 func _ready() -> void:
+	hp = max_hp
+	add_to_group("animal")  # Mit der Axt angreifbar
 	fly_center = position
 	fly_angle = randf() * TAU
 	fly_radius = randf_range(2.0, 4.0)
@@ -49,6 +55,26 @@ func _ready() -> void:
 	shape.radius = 0.3
 	col.shape = shape
 	add_child(col)
+
+
+func take_damage(amount: float) -> void:
+	hp -= amount
+	if hp <= 0:
+		_spawn_drops()
+		queue_free()
+
+
+func _spawn_drops() -> void:
+	# 1 Fleischstückchen
+	var dropped_item_script: GDScript = preload("res://scripts/dropped_item.gd")
+	var item := Area3D.new()
+	item.set_script(dropped_item_script)
+	item.item_string = "meat_small"
+	item.position = global_position
+	item.add_to_group("dropped_item")
+	var scene_root: Node = get_tree().current_scene
+	if scene_root:
+		scene_root.add_child(item)
 
 
 func _physics_process(delta: float) -> void:

@@ -8,13 +8,14 @@ extends CharacterBody3D
 @export var damage: float = 25.0
 @export var attack_range: float = 2.5
 @export var detection_range: float = 10.0
-@export var max_hp: float = 40.0
+@export var max_hp: float = 10.0  # 10 Steinaxt-Hiebe, 4 Eisen, 2 Stahl
 @export var attack_cooldown: float = 1.8
 
 enum State { IDLE, PATROLLING, CHASING, ATTACKING }
 var current_state: State = State.IDLE
 
 var hp: float = 40.0
+var animal_name: String = "Kultist"
 var target_player: CharacterBody3D = null
 var patrol_target: Vector3 = Vector3.ZERO
 var patrol_timer: float = 0.0
@@ -45,6 +46,7 @@ var eye_mat: StandardMaterial3D
 
 func _ready() -> void:
 	hp = max_hp
+	add_to_group("animal")  # Mit der Axt angreifbar
 	patrol_timer = randf_range(2.0, 5.0)
 	groan_timer = randf_range(2.0, 6.0)
 
@@ -179,7 +181,29 @@ func _check_for_player() -> void:
 func take_damage(amount: float) -> void:
 	hp -= amount
 	if hp <= 0:
+		_spawn_drops()
 		queue_free()
+	else:
+		# Getroffener Kultist greift sofort an
+		var players: Array = get_tree().get_nodes_in_group("player")
+		for p in players:
+			if p is CharacterBody3D:
+				target_player = p
+				current_state = State.CHASING
+				return
+
+
+func _spawn_drops() -> void:
+	# 1 Kultisten-Edelstein
+	var dropped_item_script: GDScript = preload("res://scripts/dropped_item.gd")
+	var item := Area3D.new()
+	item.set_script(dropped_item_script)
+	item.item_string = "cultist_gem"
+	item.position = global_position + Vector3(0, 0.5, 0)
+	item.add_to_group("dropped_item")
+	var scene_root: Node = get_tree().current_scene
+	if scene_root:
+		scene_root.add_child(item)
 
 
 func _pick_patrol_target() -> void:
