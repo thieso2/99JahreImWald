@@ -1,0 +1,68 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "f3a4c89741e0",
+  "session_id": "805fd9e5-3cf1-4ab0-b60b-8c463947c581",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T14:40:08.576463Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "PROGRESS.md",
+    "game/scripts/game_manager.gd",
+    "game/scripts/help_menu.gd"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "940f43fbf544",
+  "token_usage": {
+    "input_tokens": 389,
+    "cache_creation_tokens": 177231,
+    "cache_read_tokens": 2517349,
+    "output_tokens": 17495,
+    "api_call_count": 34
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T14:40:08.565821Z",
+    "agent_lines": 149,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 149,
+    "total_lines_changed": 149,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 100,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 7,
+        "game/scripts/bat_enemy.gd.uid": 1,
+        "game/scripts/cave.gd.uid": 1,
+        "game/scripts/cheat_menu.gd.uid": 1,
+        "game/scripts/cultist_enemy.gd.uid": 1,
+        "game/scripts/deer_model.gd.uid": 1,
+        "game/scripts/landscape_generator.gd.uid": 1,
+        "game/scripts/minimap.gd.uid": 1,
+        "game/scripts/placeable_item.gd.uid": 1,
+        "game/scripts/workbench_menu.gd.uid": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 249,
+      "agent_lines_removed": 0
+    }
+  ]
+}

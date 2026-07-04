@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "f3a4c89741e0",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "PROGRESS.md",
+    "game/scripts/game_manager.gd",
+    "game/scripts/help_menu.gd"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f3/a4c89741e0/0/metadata.json",
+      "transcript": "/f3/a4c89741e0/0/full.jsonl",
+      "content_hash": "/f3/a4c89741e0/0/content_hash.txt",
+      "prompt": "/f3/a4c89741e0/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 389,
+    "cache_creation_tokens": 177231,
+    "cache_read_tokens": 2517349,
+    "output_tokens": 17495,
+    "api_call_count": 34
+  }
+}

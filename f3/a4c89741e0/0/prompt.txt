@@ -1,0 +1,13 @@
+expore the codebase - what's the next feature we shoudl add
+
+---
+
+Check if the Explore agent survey has completed and synthesize the next-feature recommendation for the user.
+
+---
+
+Meld dir in Klot.md, dass sie auf Deutsch mit dir reden.
+
+---
+
+Wenn ich Fragezeichen drücke, dann zeige ich ein Fenster mit allen Tastaturbefehlen, die ich benutzen kann.
