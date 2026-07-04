@@ -10,3 +10,7 @@ Thumbs.db
 export/
 *.pck
 *.zip
+
+# Lokale Tooling-Ordner
+.claude/
+.entire/
