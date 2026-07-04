@@ -595,3 +595,12 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - **⚙-Button** oben rechts (unter dem ?-Button) öffnet das Cheat-Menü ohne Tastatur
 - **Cheat-Menü scrollbar** gemacht (ScrollContainer, Panel bis zum unteren Bildschirmrand) – vorher waren die unteren Buttons auf dem iPad unerreichbar
 - **Reset mit Bestätigung:** Erster Tipp auf "SPIEL ZURÜCKSETZEN" schaltet scharf ("Wirklich? Nochmal tippen!"), zweiter Tipp innerhalb von 3 Sekunden setzt zurück – schützt vor versehentlichem Antippen
+
+---
+
+## 2026-07-04 – Follow-Kamera immer aktiv (echtes Roblox-Verhalten)
+
+- Kamera bleibt **immer** hinter dem Spieler – nicht mehr nur bei Joystick-Steuerung, auch mit WASD am PC
+- `follow_speed` 2.5 → 5.0: Kamera schwenkt straffer hinterher
+- Seitliche Eingaben drehen die Figur, die Kamera zieht nach → "vorwärts ist immer vorwärts"
+- Ausnahmen: First-Person-Modus, aktives manuelles Drehen (Touch-Drag, rechte Maustaste, Pfeiltasten)

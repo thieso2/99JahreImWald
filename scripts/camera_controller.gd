@@ -25,7 +25,7 @@ extends Node3D
 @export var max_distance: float = 20.0
 @export var default_distance: float = 5.0
 @export var first_person_threshold: float = 2.5
-@export var follow_speed: float = 2.5  # Roblox "Follow": Kamera schwenkt hinter die Figur
+@export var follow_speed: float = 5.0  # Roblox "Follow": Kamera schwenkt hinter die Figur
 
 # Kamera-Winkel (in Grad)
 var yaw: float = 0.0       # Horizontale Drehung
@@ -76,20 +76,18 @@ func _process(delta: float) -> void:
 
 
 func _follow_behind_player(delta: float) -> void:
-	# Roblox "Follow"-Kamera (iPad): Beim Laufen mit dem Joystick schwenkt die
-	# Kamera automatisch hinter die Spielfigur. Manuelles Drehen hat Vorrang.
+	# Roblox "Follow"-Kamera: Die Kamera bleibt immer hinter der Spielfigur.
+	# Vorwärts = immer vorwärts; seitliche Eingaben drehen die Figur und die
+	# Kamera schwenkt hinterher. Manuelles Drehen hat Vorrang.
 	if not target is CharacterBody3D:
 		return
+	if distance < first_person_threshold:
+		return  # First-Person: Blickrichtung nicht automatisch drehen
 	if camera_touch_index != -1:
 		return  # Spieler dreht gerade selbst (Touch-Drag)
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		return
 	if Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_RIGHT):
-		return
-
-	# Nur bei Joystick-Steuerung (Touch) – PC-Tastatur bleibt wie gehabt
-	var joy: Variant = target.get("joystick_direction")
-	if joy == null or (joy as Vector2).length() < 0.1:
 		return
 
 	var vel: Vector3 = target.velocity
