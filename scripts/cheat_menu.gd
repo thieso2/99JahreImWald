@@ -16,6 +16,9 @@ var btn_axe_iron: Button
 var btn_axe_steel: Button
 var btn_heal: Button
 var btn_kill: Button
+var btn_reset: Button
+var reset_armed: bool = false
+var reset_arm_timer: float = 0.0
 
 func _ready() -> void:
 	visible = false
@@ -29,10 +32,16 @@ func _ready() -> void:
 	style.set_content_margin_all(12)
 	add_theme_stylebox_override("panel", style)
 
-	# Layout
+	# Layout: scrollbar, damit alle Buttons auch auf dem iPad erreichbar sind
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	add_child(scroll)
+
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 6)
-	add_child(vbox)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(vbox)
 
 	# Titel
 	var title := Label.new()
@@ -104,20 +113,20 @@ func _ready() -> void:
 	var sep4 := HSeparator.new()
 	vbox.add_child(sep4)
 
-	# Spiel zurücksetzen
-	var btn_reset := _add_button(vbox, "SPIEL ZURÜCKSETZEN")
+	# Spiel zurücksetzen (mit Bestätigung gegen versehentliches Tippen)
+	btn_reset = _add_button(vbox, "SPIEL ZURÜCKSETZEN")
 	btn_reset.add_theme_color_override("font_color", Color(1, 0.3, 0.3, 1))
 	btn_reset.pressed.connect(_reset_game)
 
-	# Position: oben links
+	# Position: oben links, bis fast zum unteren Rand (Inhalt scrollt)
 	anchor_left = 0.0
 	anchor_top = 0.0
 	anchor_right = 0.0
-	anchor_bottom = 0.0
+	anchor_bottom = 1.0
 	offset_left = 10
 	offset_top = 10
-	offset_right = 220
-	offset_bottom = 400
+	offset_right = 230
+	offset_bottom = -10
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -222,7 +231,24 @@ func _teleport_to_portal() -> void:
 		player.global_position = Vector3(40, 1, -25)
 
 
+func _process(delta: float) -> void:
+	# Reset-Bestätigung läuft nach 3 Sekunden ab
+	if reset_armed:
+		reset_arm_timer -= delta
+		if reset_arm_timer <= 0:
+			reset_armed = false
+			if btn_reset:
+				btn_reset.text = "SPIEL ZURÜCKSETZEN"
+
+
 func _reset_game() -> void:
+	# Erster Tipp: nur scharfschalten – zweiter Tipp innerhalb von 3s setzt zurück
+	if not reset_armed:
+		reset_armed = true
+		reset_arm_timer = 3.0
+		if btn_reset:
+			btn_reset.text = "Wirklich? Nochmal tippen!"
+		return
 	var gm: Node = get_tree().current_scene
 	if gm and gm.has_method("reset_game"):
 		gm.reset_game()

@@ -649,6 +649,25 @@ func _create_touch_buttons() -> void:
 	help_button.pressed.connect(_on_help_button_pressed)
 	hud.add_child(help_button)
 
+	# Cheat-Menü-Button (⚙): oben rechts unter dem ?-Button – öffnet das
+	# Cheat-Menü inkl. Spiel-Reset auch ohne Tastatur (iPad)
+	var cheat_button := Button.new()
+	cheat_button.text = "⚙"
+	cheat_button.anchor_left = 1.0
+	cheat_button.anchor_right = 1.0
+	cheat_button.offset_left = -64.0
+	cheat_button.offset_top = 72.0
+	cheat_button.offset_right = -16.0
+	cheat_button.offset_bottom = 120.0
+	cheat_button.add_theme_font_size_override("font_size", 24)
+	cheat_button.pressed.connect(_on_cheat_button_pressed)
+	hud.add_child(cheat_button)
+
+
+func _on_cheat_button_pressed() -> void:
+	if cheat_menu:
+		cheat_menu.visible = not cheat_menu.visible
+
 
 func _on_workbench_button_pressed() -> void:
 	if workbench_menu:

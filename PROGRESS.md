@@ -587,3 +587,11 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - Manuelle Eingaben haben Vorrang: Touch-Drag, rechte Maustaste, Pfeiltasten
 - Nur bei Joystick-Steuerung aktiv – PC-Tastatur-Verhalten unverändert
 - Kamera-Drag-Zone an die neue Bewegungszone angepasst
+
+---
+
+## 2026-07-04 – Cheat-Menü & Reset auf dem iPad
+
+- **⚙-Button** oben rechts (unter dem ?-Button) öffnet das Cheat-Menü ohne Tastatur
+- **Cheat-Menü scrollbar** gemacht (ScrollContainer, Panel bis zum unteren Bildschirmrand) – vorher waren die unteren Buttons auf dem iPad unerreichbar
+- **Reset mit Bestätigung:** Erster Tipp auf "SPIEL ZURÜCKSETZEN" schaltet scharf ("Wirklich? Nochmal tippen!"), zweiter Tipp innerhalb von 3 Sekunden setzt zurück – schützt vor versehentlichem Antippen
