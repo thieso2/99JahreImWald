@@ -611,3 +611,13 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 
 - Joystick nach oben ziehen lief rückwärts (Bildschirm-Y zeigt nach unten, Bewegungs-Y nach vorne)
 - Fix: Y-Invertierung in `player.set_joystick_input()` – Joystick hoch = vorwärts
+
+---
+
+## 2026-07-04 – Runde Action- & Jump-Knöpfe (Roblox-Stil)
+
+- **Sprung-Knopf:** groß und rund (110px, ⬆), ganz unten rechts – wie bei Roblox
+- **Action-Knopf:** rund (100px), diagonal über dem Sprung-Knopf; führt die E-Aktion aus (Retten → Sammeln → Angreifen → Hacken)
+- Kontextabhängige Beschriftung: "Retten"/"Sammeln"/"Angriff"/"Hacken", ohne Kontext abgedimmtes "E"
+- Alte "Aufsammeln"/"Baum hacken"-Buttons entfernt (ersetzt durch den Action-Knopf)
+- Rechter Button-Stapel nach oben verschoben (Craft/Axt/Pflanzen ab -300, Fackel/Braten/Essen/Platzieren darüber)

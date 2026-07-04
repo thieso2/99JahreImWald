@@ -50,6 +50,7 @@ var eat_button: Button = null
 var place_button: Button = null
 var workbench_button: Button = null
 var help_button: Button = null
+var action_button: Button = null  # Runder Kontext-Knopf (Retten/Sammeln/Hacken)
 
 
 func _ready() -> void:
@@ -591,19 +592,65 @@ func _make_touch_button(text: String, offset_y: float) -> Button:
 	return btn
 
 
+func _make_round_button(text: String, size: float, off_x: float, off_y: float) -> Button:
+	# Großer runder Touch-Knopf unten rechts (Roblox-Stil)
+	var btn := Button.new()
+	btn.text = text
+	btn.anchor_left = 1.0
+	btn.anchor_top = 1.0
+	btn.anchor_right = 1.0
+	btn.anchor_bottom = 1.0
+	btn.offset_left = off_x
+	btn.offset_top = off_y
+	btn.offset_right = off_x + size
+	btn.offset_bottom = off_y + size
+	btn.add_theme_font_size_override("font_size", 18)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.1, 0.1, 0.1, 0.4)
+	style.border_color = Color(1, 1, 1, 0.5)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(int(size / 2.0))
+	btn.add_theme_stylebox_override("normal", style)
+	var style_pressed := style.duplicate()
+	style_pressed.bg_color = Color(0.4, 0.4, 0.4, 0.6)
+	btn.add_theme_stylebox_override("pressed", style_pressed)
+	btn.add_theme_stylebox_override("hover", style)
+
+	hud.add_child(btn)
+	return btn
+
+
 func _create_touch_buttons() -> void:
-	# Rechter Stapel: über den bestehenden Buttons (Plant endet bei -300)
-	torch_button = _make_touch_button("Fackel an/aus [T]", -360.0)
+	# Bestehende Szene-Buttons nach oben schieben – Platz für die runden Knöpfe
+	craft_button.offset_top = -300.0
+	craft_button.offset_bottom = -260.0
+	axe_button.offset_top = -356.0
+	axe_button.offset_bottom = -316.0
+	plant_button.offset_top = -412.0
+	plant_button.offset_bottom = -372.0
+
+	# Rechter Stapel (kontextabhängig)
+	torch_button = _make_touch_button("Fackel an/aus [T]", -468.0)
 	torch_button.pressed.connect(_on_torch_toggle_pressed)
 
-	cook_button = _make_touch_button("Braten [C]", -420.0)
+	cook_button = _make_touch_button("Braten [C]", -524.0)
 	cook_button.pressed.connect(_on_cook_pressed)
 
-	eat_button = _make_touch_button("Essen [V]", -480.0)
+	eat_button = _make_touch_button("Essen [V]", -580.0)
 	eat_button.pressed.connect(_on_eat_pressed)
 
-	place_button = _make_touch_button("Platzieren [P]", -540.0)
+	place_button = _make_touch_button("Platzieren [P]", -636.0)
 	place_button.pressed.connect(_on_place_pressed)
+
+	# Runde Roblox-Knöpfe unten rechts:
+	# Sprung (groß, ganz unten rechts) + Action (diagonal darüber links)
+	var round_jump := _make_round_button("⬆", 110.0, -145.0, -175.0)
+	round_jump.add_theme_font_size_override("font_size", 40)
+	round_jump.pressed.connect(_on_jump_pressed)
+
+	action_button = _make_round_button("E", 100.0, -265.0, -235.0)
+	action_button.pressed.connect(_on_action_pressed)
 
 	# Werkbank-Button: unten Mitte, über der Hotbar (nur in Werkbank-Nähe)
 	workbench_button = Button.new()
@@ -620,21 +667,6 @@ func _create_touch_buttons() -> void:
 	workbench_button.add_theme_font_size_override("font_size", 15)
 	workbench_button.pressed.connect(_on_workbench_button_pressed)
 	hud.add_child(workbench_button)
-
-	# Sprung-Button: unten rechts neben dem Button-Stapel, immer sichtbar
-	var jump_button := Button.new()
-	jump_button.text = "⬆"
-	jump_button.anchor_left = 1.0
-	jump_button.anchor_top = 1.0
-	jump_button.anchor_right = 1.0
-	jump_button.anchor_bottom = 1.0
-	jump_button.offset_left = -300.0
-	jump_button.offset_top = -110.0
-	jump_button.offset_right = -236.0
-	jump_button.offset_bottom = -46.0
-	jump_button.add_theme_font_size_override("font_size", 26)
-	jump_button.pressed.connect(_on_jump_pressed)
-	hud.add_child(jump_button)
 
 	# Hilfe-Button: oben rechts, immer sichtbar
 	help_button = Button.new()
@@ -680,19 +712,17 @@ func _on_help_button_pressed() -> void:
 
 
 func _update_action_buttons() -> void:
-	# Hack-Button: sichtbar wenn Baum in der Nähe und Axt aktiv
-	var near_tree := false
-	var trees := get_tree().get_nodes_in_group("tree")
-	for tree in trees:
-		if tree.has_method("chop") and not tree.is_harvested:
-			var distance: float = player.global_position.distance_to(tree.global_position)
-			if distance < 5.0:
-				near_tree = true
-				break
-	harvest_button.visible = near_tree and player.axe_active
-	harvest_button.text = "Baum hacken [E]"
+	# Alte Einzel-Buttons sind durch den runden Action-Knopf ersetzt
+	harvest_button.visible = false
+	pickup_button.visible = false
 
-	# Pickup-Button: sichtbar wenn Items ODER ein Kind in der Nähe
+	# Kontext für den runden Action-Knopf ermitteln (Priorität wie E-Taste)
+	var near_child := false
+	for lost_child in get_tree().get_nodes_in_group("lost_child"):
+		if player.global_position.distance_to(lost_child.global_position) < 3.0:
+			near_child = true
+			break
+
 	var near_item := false
 	var items: Array = _find_dropped_items()
 	for item in items:
@@ -700,13 +730,37 @@ func _update_action_buttons() -> void:
 		if dist < 3.0:
 			near_item = true
 			break
-	var near_child := false
-	for lost_child in get_tree().get_nodes_in_group("lost_child"):
-		if player.global_position.distance_to(lost_child.global_position) < 3.0:
-			near_child = true
-			break
-	pickup_button.visible = near_item or near_child
-	pickup_button.text = "Kind retten [E]" if near_child else "Aufsammeln [E]"
+
+	var near_animal := false
+	if player.axe_active:
+		for animal in get_tree().get_nodes_in_group("animal"):
+			if animal.has_method("take_damage") and player.global_position.distance_to(animal.global_position) < 3.0:
+				near_animal = true
+				break
+
+	var near_tree := false
+	if player.axe_active:
+		var trees := get_tree().get_nodes_in_group("tree")
+		for tree in trees:
+			if tree.has_method("chop") and not tree.is_harvested:
+				var distance: float = player.global_position.distance_to(tree.global_position)
+				if distance < 4.0:
+					near_tree = true
+					break
+
+	if action_button:
+		if near_child:
+			action_button.text = "Retten"
+		elif near_item:
+			action_button.text = "Sammeln"
+		elif near_animal:
+			action_button.text = "Angriff"
+		elif near_tree:
+			action_button.text = "Hacken"
+		else:
+			action_button.text = "E"
+		# Ohne Kontext abgedimmt, aber sichtbar (Muskelgedächtnis)
+		action_button.modulate.a = 1.0 if (near_child or near_item or near_animal or near_tree) else 0.45
 
 	# Drop-Button: sichtbar wenn Inventar nicht leer
 	drop_button.visible = player.inventory.size() > 0
