@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "57045db263f9",
+  "session_id": "805fd9e5-3cf1-4ab0-b60b-8c463947c581",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T15:22:43.794551Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "PROGRESS.md",
+    "game/scripts/bat_enemy.gd",
+    "game/scripts/cultist_enemy.gd",
+    "game/scripts/dropped_item.gd",
+    "game/scripts/inventory_bar.gd"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "a042f9db755d",
+  "token_usage": {
+    "input_tokens": 3086,
+    "cache_creation_tokens": 311661,
+    "cache_read_tokens": 19551916,
+    "output_tokens": 113114,
+    "api_call_count": 133
+  },
+  "session_metrics": {
+    "turn_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T15:22:43.770126Z",
+    "agent_lines": 150,
+    "agent_removed": 4,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 150,
+    "total_lines_changed": 154,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
