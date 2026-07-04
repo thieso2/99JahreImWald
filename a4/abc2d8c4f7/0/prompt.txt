@@ -1,0 +1,1 @@
+Der virtuelle Joystick braucht auf der rechten Seite einen Action-Knopf und einen Jump-Knopf.
