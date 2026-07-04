@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "f2d711cd9a2f",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "PROGRESS.md",
+    "game/scripts/cheat_menu.gd",
+    "game/scripts/game_manager.gd",
+    "game/scripts/minimap.gd",
+    "game/scripts/portal.gd",
+    "game/scripts/underground_world.gd"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f2/d711cd9a2f/0/metadata.json",
+      "transcript": "/f2/d711cd9a2f/0/full.jsonl",
+      "content_hash": "/f2/d711cd9a2f/0/content_hash.txt",
+      "prompt": "/f2/d711cd9a2f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1921,
+    "cache_creation_tokens": 263158,
+    "cache_read_tokens": 11269901,
+    "output_tokens": 72208,
+    "api_call_count": 93
+  }
+}
