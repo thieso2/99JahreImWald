@@ -1,0 +1,1 @@
+Die Kamera soll immer hinter dem Spieler positioniert bleiben. Das heißt, wir gehen nach vorne geht es immer vorwärts und zu den Seiten dreht sich sozusagen die Kamera hinter dem Spieler.So wie das beim echten Roblox auch ist.

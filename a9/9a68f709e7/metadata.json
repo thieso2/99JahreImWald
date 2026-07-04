@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "a99a68f709e7",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "scripts/camera_controller.gd"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a9/9a68f709e7/0/metadata.json",
+      "transcript": "/a9/9a68f709e7/0/full.jsonl",
+      "content_hash": "/a9/9a68f709e7/0/content_hash.txt",
+      "prompt": "/a9/9a68f709e7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 25,
+    "cache_creation_tokens": 2804,
+    "cache_read_tokens": 682366,
+    "output_tokens": 3376,
+    "api_call_count": 2
+  }
+}

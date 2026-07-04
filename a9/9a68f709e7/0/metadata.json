@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "a99a68f709e7",
+  "session_id": "805fd9e5-3cf1-4ab0-b60b-8c463947c581",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T16:09:02.451979Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "scripts/camera_controller.gd"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "9d67794fedc1",
+  "checkpoint_transcript_start": 1804,
+  "transcript_lines_at_start": 1804,
+  "token_usage": {
+    "input_tokens": 25,
+    "cache_creation_tokens": 2804,
+    "cache_read_tokens": 682366,
+    "output_tokens": 3376,
+    "api_call_count": 2
+  },
+  "session_metrics": {
+    "turn_count": 22
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T16:09:02.390233Z",
+    "agent_lines": 6,
+    "agent_removed": 8,
+    "human_added": 9,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 15,
+    "total_lines_changed": 23,
+    "agent_percentage": 60.86956521739131,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
