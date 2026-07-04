@@ -25,6 +25,7 @@ extends Node3D
 @export var max_distance: float = 20.0
 @export var default_distance: float = 5.0
 @export var first_person_threshold: float = 2.5
+@export var follow_speed: float = 2.5  # Roblox "Follow": Kamera schwenkt hinter die Figur
 
 # Kamera-Winkel (in Grad)
 var yaw: float = 0.0       # Horizontale Drehung
@@ -70,7 +71,34 @@ func _process(delta: float) -> void:
 	if Input.is_key_pressed(KEY_MINUS) or Input.is_key_pressed(KEY_KP_SUBTRACT):
 		distance = clampf(distance + zoom_speed_key * delta, min_distance, max_distance)
 
+	_follow_behind_player(delta)
 	_update_camera()
+
+
+func _follow_behind_player(delta: float) -> void:
+	# Roblox "Follow"-Kamera (iPad): Beim Laufen mit dem Joystick schwenkt die
+	# Kamera automatisch hinter die Spielfigur. Manuelles Drehen hat Vorrang.
+	if not target is CharacterBody3D:
+		return
+	if camera_touch_index != -1:
+		return  # Spieler dreht gerade selbst (Touch-Drag)
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		return
+	if Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_RIGHT):
+		return
+
+	# Nur bei Joystick-Steuerung (Touch) – PC-Tastatur bleibt wie gehabt
+	var joy: Variant = target.get("joystick_direction")
+	if joy == null or (joy as Vector2).length() < 0.1:
+		return
+
+	var vel: Vector3 = target.velocity
+	if Vector2(vel.x, vel.z).length() < 1.0:
+		return
+
+	# Ziel-Yaw: Kamera schaut in Bewegungsrichtung (steht also hinter der Figur)
+	var target_yaw: float = rad_to_deg(atan2(vel.x, -vel.z))
+	yaw = rad_to_deg(lerp_angle(deg_to_rad(yaw), deg_to_rad(target_yaw), follow_speed * delta))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -138,8 +166,10 @@ func _set_player_visible(vis: bool) -> void:
 
 
 func _is_on_joystick(pos: Vector2) -> bool:
+	# Bewegungszone des dynamischen Joysticks (Roblox-Stil):
+	# linke 40% des Bildschirms, unterhalb der oberen 30%
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
-	return pos.x < 250 and pos.y > screen_size.y - 250
+	return pos.x < screen_size.x * 0.4 and pos.y > screen_size.y * 0.3
 
 
 func get_yaw() -> float:

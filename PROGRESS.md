@@ -566,3 +566,24 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - **Sprung-Button** (⬆) unten rechts neben dem Button-Stapel
 - **Kind retten:** Aufsammeln-Button erscheint auch bei Kindern in der Nähe (Text wechselt zu "Kind retten [E]"), Button-Handler prüft Rettung zuerst
 - README um iPad-Hinweise ergänzt
+
+---
+
+## 2026-07-04 – Roblox-Style Touch-Steuerung (iPad)
+
+### Recherche: Roblox-Mobile-Schema
+- Dynamischer Thumbstick (erscheint am Finger, wandert beim Überziehen mit)
+- "Follow"-Kamera schwenkt beim Laufen automatisch hinter die Figur
+- Sprung-Button unten rechts, Kamera-Drag auf restlicher Fläche, Pinch-Zoom
+
+### Dynamischer Joystick (`touch_joystick.gd` neu geschrieben)
+- **Bewegungszone:** linke 40% des Bildschirms (unterhalb der oberen 30%)
+- Joystick-Basis erscheint dort, wo der Finger auftippt
+- Über den Rand hinausziehen nimmt die Basis mit (Roblox-Verhalten)
+- Loslassen: Basis kehrt als blasser Ruhe-Kreis an die Standardposition zurück (Alpha 0.35 ↔ 0.95)
+
+### "Follow"-Kamera (`camera_controller.gd`)
+- Beim Laufen per Joystick lerpt die Kamera hinter die Spielfigur (`follow_speed` 2.5)
+- Manuelle Eingaben haben Vorrang: Touch-Drag, rechte Maustaste, Pfeiltasten
+- Nur bei Joystick-Steuerung aktiv – PC-Tastatur-Verhalten unverändert
+- Kamera-Drag-Zone an die neue Bewegungszone angepasst
