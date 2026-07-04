@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "d9787364ccb9",
+  "session_id": "805fd9e5-3cf1-4ab0-b60b-8c463947c581",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T16:03:15.955668Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "scripts/cheat_menu.gd",
+    "scripts/game_manager.gd"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "138797b0c5cb",
+  "checkpoint_transcript_start": 1731,
+  "transcript_lines_at_start": 1731,
+  "token_usage": {
+    "input_tokens": 187,
+    "cache_creation_tokens": 5283,
+    "cache_read_tokens": 2691226,
+    "output_tokens": 5132,
+    "api_call_count": 8
+  },
+  "session_metrics": {
+    "turn_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T16:03:15.887883Z",
+    "agent_lines": 53,
+    "agent_removed": 8,
+    "human_added": 8,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 61,
+    "total_lines_changed": 69,
+    "agent_percentage": 88.40579710144928,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

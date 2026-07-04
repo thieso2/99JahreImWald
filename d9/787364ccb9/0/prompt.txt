@@ -1,0 +1,5 @@
+commit and push
+
+---
+
+Wir brauchen einen Reset-Knopf für das Game, damit wir wieder von neuem anfangen können, auch auf dem iPad. Außerdem müssen wir das Cheat-Menü im iPad irgendwie aufmachen können.
