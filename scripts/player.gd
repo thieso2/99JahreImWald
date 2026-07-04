@@ -211,7 +211,9 @@ func toggle_torch() -> void:
 
 
 func set_joystick_input(direction: Vector2) -> void:
-	joystick_direction = direction
+	# Bildschirm-Y zeigt nach unten, Bewegungs-Y nach vorne → Y invertieren
+	# (Joystick nach oben = vorwärts laufen)
+	joystick_direction = Vector2(direction.x, -direction.y)
 
 
 func _on_safe_zone_entered() -> void:

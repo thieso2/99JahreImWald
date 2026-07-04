@@ -604,3 +604,10 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - `follow_speed` 2.5 → 5.0: Kamera schwenkt straffer hinterher
 - Seitliche Eingaben drehen die Figur, die Kamera zieht nach → "vorwärts ist immer vorwärts"
 - Ausnahmen: First-Person-Modus, aktives manuelles Drehen (Touch-Drag, rechte Maustaste, Pfeiltasten)
+
+---
+
+## 2026-07-04 – Bug-Fix: Joystick-Y-Achse invertiert
+
+- Joystick nach oben ziehen lief rückwärts (Bildschirm-Y zeigt nach unten, Bewegungs-Y nach vorne)
+- Fix: Y-Invertierung in `player.set_joystick_input()` – Joystick hoch = vorwärts
