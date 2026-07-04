@@ -353,3 +353,15 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 | G | Ausgewähltes Item ablegen |
 | Tab / Shift+Tab | Inventory Slot wechseln |
 | 1-9 | Direkt zum Inventory Slot |
+
+---
+
+## 2026-07-04 – Hilfe-Fenster mit Tastaturbefehlen
+
+### Neues Feature: Hilfe-Menü (`help_menu.gd`)
+- **?-Taste:** Öffnet/schließt ein Fenster mit allen Tastaturbefehlen
+- **Esc:** Schließt das Fenster ebenfalls
+- Erkennung über `event.unicode == 63` → funktioniert unabhängig vom Tastatur-Layout (auf Deutsch Shift+ß)
+- Gruppiert nach Abschnitten: Bewegung, Kamera, Aktionen, Inventar, Sonstiges
+- Stil passend zu Werkbank/Cheat-Menü (PanelContainer, zentriert, blauer Rahmen)
+- Einbindung im `game_manager._ready()` wie die anderen Menüs

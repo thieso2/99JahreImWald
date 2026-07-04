@@ -100,6 +100,13 @@ func _ready() -> void:
 	minimap.camera_controller = camera_controller
 	hud.add_child(minimap)
 
+	# Hilfe-Menü erstellen (? zum Öffnen)
+	var help_script: GDScript = preload("res://scripts/help_menu.gd")
+	var help_menu := PanelContainer.new()
+	help_menu.set_script(help_script)
+	help_menu.name = "HelpMenu"
+	hud.add_child(help_menu)
+
 	# Signale verbinden
 	player.hp_changed.connect(_on_hp_changed)
 	player.wood_changed.connect(_on_wood_changed)
