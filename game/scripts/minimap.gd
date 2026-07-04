@@ -143,14 +143,14 @@ func _draw() -> void:
 			center + Vector2(cos(a2), sin(a2)) * sr,
 			Color(1.0, 0.9, 0.0, 1.0), 2.0 * sc)
 
-	# --- Höhle: braunes Quadrat mit weißem Rand ---
-	var cave: Node = get_tree().current_scene.find_child("Cave", false, false)
-	if cave and _revealed(cave.global_position):
-		var cp: Vector2 = _w2m(cave.global_position)
+	# --- Portal: lila Quadrat mit weißem Rand ---
+	var portal: Node = get_tree().current_scene.find_child("Portal", false, false)
+	if portal and _revealed(portal.global_position):
+		var cp: Vector2 = _w2m(portal.global_position)
 		var hs: float = 7.0 * sc
 		draw_rect(Rect2(cp.x - hs - 2, cp.y - hs - 2, hs * 2 + 4, hs * 2 + 4), Color.WHITE)
-		draw_rect(Rect2(cp.x - hs, cp.y - hs, hs * 2, hs * 2), Color(0.55, 0.35, 0.15, 1.0))
-		draw_rect(Rect2(cp.x - hs * 0.4, cp.y - hs * 0.3, hs * 0.8, hs * 0.6), Color(0.1, 0.05, 0.05, 1.0))
+		draw_rect(Rect2(cp.x - hs, cp.y - hs, hs * 2, hs * 2), Color(0.6, 0.2, 0.9, 1.0))
+		draw_rect(Rect2(cp.x - hs * 0.4, cp.y - hs * 0.3, hs * 0.8, hs * 0.6), Color(0.9, 0.8, 1.0, 1.0))
 
 	# --- Spieler: weißes Dreieck mit schwarzer Outline ---
 	var pp: Vector2 = _w2m(player.global_position)

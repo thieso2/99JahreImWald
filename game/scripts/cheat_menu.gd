@@ -95,10 +95,10 @@ func _ready() -> void:
 	btn_deer_normal.pressed.connect(_set_deer_normal)
 	var btn_deer_hungry := _add_button(vbox, "Hungriger Hirsch")
 	btn_deer_hungry.pressed.connect(_set_deer_hungry)
-	var btn_tp_cave := _add_button(vbox, "Zur Höhle teleportieren")
-	btn_tp_cave.pressed.connect(_teleport_to_cave)
-	var btn_tp_cave_inside := _add_button(vbox, "IN die Höhle teleportieren")
-	btn_tp_cave_inside.pressed.connect(_teleport_inside_cave)
+	var btn_tp_portal := _add_button(vbox, "Zum Portal teleportieren")
+	btn_tp_portal.pressed.connect(_teleport_to_portal)
+	var btn_tp_underworld := _add_button(vbox, "In die Unterwelt teleportieren")
+	btn_tp_underworld.pressed.connect(_teleport_to_underworld)
 
 	# Position: oben links
 	anchor_left = 0.0
@@ -203,25 +203,24 @@ func _set_deer_hungry() -> void:
 		deer.set_hungry(true)
 
 
-func _teleport_to_cave() -> void:
+func _teleport_to_portal() -> void:
 	if not player:
 		return
-	var cave: Node = player.get_tree().current_scene.find_child("Cave", false, false)
-	if cave:
-		player.global_position = cave.global_position + Vector3(0, 1, 5)
+	var portal: Node = player.get_tree().current_scene.find_child("Portal", false, false)
+	if portal:
+		player.global_position = portal.global_position + Vector3(0, 1, 5)
 	else:
 		player.global_position = Vector3(40, 1, -25)
 
 
-func _teleport_inside_cave() -> void:
+func _teleport_to_underworld() -> void:
 	if not player:
 		return
-	var cave: Node = player.get_tree().current_scene.find_child("Cave", false, false)
-	if cave:
-		# Mitte von Raum 1
-		player.global_position = cave.global_position + Vector3(0, -3.5, -22.0)
+	var underworld: Node = player.get_tree().current_scene.find_child("UndergroundWorld", false, false)
+	if underworld:
+		player.global_position = underworld.global_position + Vector3(0, 1.0, 6.0)
 	else:
-		player.global_position = Vector3(40, -3.5, -52)
+		player.global_position = Vector3(0, -99.0, 6.0)
 
 
 func _spawn_deer_nearby() -> void:

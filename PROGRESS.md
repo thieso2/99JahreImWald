@@ -403,3 +403,40 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 
 ### Spawning (`game_manager._spawn_animals()`)
 - 6 Hasen im Radius 12-45m, 3 Wölfe im Radius 30-60m (fester Seed 77)
+
+---
+
+## 2026-07-04 – Hasen-Verhalten angepasst
+
+### Änderungen nach Nutzer-Feedback
+- **Hasen fliehen nicht mehr vor dem Spieler** – man kann direkt zu ihnen hinlaufen
+- **Flucht nur nach Angriff:** HP von 1 auf 2 erhöht → mit der Steinaxt braucht es 2 Treffer, nach dem ersten quiekt der Hase und flieht (Eisen-/Stahlaxt erlegen weiterhin mit einem Hieb)
+- **Spawnen nah am Lagerfeuer:** Radius 9-13m statt 12-45m (Schutzzone ist 8m)
+- **Heimatpunkt-System:** Hasen hoppeln um ihren Spawn-Punkt herum statt zufällig wegzudriften; Hüpfziele bleiben außerhalb der Lagerfeuer-Zone (8,5m)
+
+---
+
+## 2026-07-04 – Höhle entfernt, Portal & Unterwelt
+
+### Höhle entfernt
+- `cave.gd` gelöscht, Spawn-Code und `_cut_ground_hole()` aus dem game_manager entfernt
+- Der Boden ist wieder durchgehend (kein Loch mehr bei 40/-30)
+
+### Portal (`portal.gd`)
+- Steinbogen mit zwei Säulen, leuchtenden Runen und wirbelnder lila Magie-Scheibe
+- Pulsierendes OmniLight, heller Kern in der Mitte
+- Steht wo früher der Höhleneingang war (40, 0, -30)
+- **Durchgehen teleportiert** in die Unterwelt (Area3D-Trigger)
+- 2s Cooldown verhindert sofortiges Zurück-Teleportieren
+- Magisches Teleport-Geräusch (prozedural, aufsteigender Ton)
+- Minimap zeigt jetzt ein lila Portal-Symbol statt der Höhle
+
+### Unterwelt (`underground_world.gd`)
+- Große Kaverne (70x70m, 13m hoch) bei y=-100 tief unter der Karte
+- Leuchtende Kristall-Gruppen (blau/türkis, 5 davon mit echtem Licht wegen Mobile-Renderer)
+- Stalagmiten und Stalaktiten, 16 leuchtende Pilze
+- **Feinde:** 3 Fledermäuse + 3 Kultisten (Scripts von der Höhle wiederverwendet)
+- **Rück-Portal** (grün) bringt den Spieler zurück in den Wald
+
+### Cheat-Menü angepasst
+- "Zum Portal teleportieren" und "In die Unterwelt teleportieren" statt der Höhlen-Teleports

@@ -47,16 +47,35 @@ func _ready() -> void:
 	landscape.name = "LandscapeGenerator"
 	add_child(landscape)
 
-	# Höhle spawnen – feste Position, Eingang zeigt in +Z (zum Spieler)
-	var cave_script: GDScript = preload("res://scripts/cave.gd")
-	var cave := Node3D.new()
-	cave.set_script(cave_script)
-	cave.name = "Cave"
-	cave.position = Vector3(40.0, 0, -30.0)  # Nordöstlich vom Camp
-	add_child(cave)
+	# Unterirdische Welt tief unter der Karte
+	var underworld_script: GDScript = preload("res://scripts/underground_world.gd")
+	var underworld := Node3D.new()
+	underworld.set_script(underworld_script)
+	underworld.name = "UndergroundWorld"
+	underworld.position = Vector3(0, -100.0, 0)
+	add_child(underworld)
 
-	# Loch im Boden für die Höhle
-	_cut_ground_hole(cave.position)
+	# Portal im Wald (wo früher die Höhle war) → führt in die Unterwelt
+	var portal_script: GDScript = preload("res://scripts/portal.gd")
+	var portal := Node3D.new()
+	portal.set_script(portal_script)
+	portal.name = "Portal"
+	portal.position = Vector3(40.0, 0, -30.0)  # Nordöstlich vom Camp
+	portal.target_position = Vector3(0, -99.0, 6.0)  # Ankunft in der Unterwelt
+	portal.arrival_message = "Du betrittst die Unterwelt... Sei vorsichtig!"
+	add_child(portal)
+	portal.player_teleported.connect(_on_portal_teleported)
+
+	# Rück-Portal in der Unterwelt → führt zurück in den Wald
+	var return_portal := Node3D.new()
+	return_portal.set_script(portal_script)
+	return_portal.name = "ReturnPortal"
+	return_portal.position = Vector3(0, -100.0, 12.0)
+	return_portal.target_position = Vector3(40.0, 1.0, -25.0)  # Vor dem Wald-Portal
+	return_portal.portal_color = Color(0.2, 0.8, 0.4, 1)  # Grün = zurück
+	return_portal.arrival_message = "Zurück im Wald!"
+	add_child(return_portal)
+	return_portal.player_teleported.connect(_on_portal_teleported)
 
 	# Tiere spawnen: Hasen (friedlich) und Wölfe (feindlich)
 	_spawn_animals()
@@ -275,14 +294,14 @@ func _spawn_animals() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 77  # Fester Seed für konsistente Positionen
 
-	# 6 Hasen im ganzen Wald verteilt
+	# 6 Hasen dicht am Lagerfeuer, aber außerhalb der sicheren Zone (8m)
 	var rabbit_script: GDScript = preload("res://scripts/rabbit_animal.gd")
 	for i in range(6):
 		var rabbit := CharacterBody3D.new()
 		rabbit.set_script(rabbit_script)
 		rabbit.name = "Hase%d" % i
 		var angle: float = rng.randf() * TAU
-		var dist: float = rng.randf_range(12.0, 45.0)
+		var dist: float = rng.randf_range(9.0, 13.0)
 		rabbit.position = Vector3(cos(angle) * dist, 0.5, sin(angle) * dist)
 		add_child(rabbit)
 
@@ -507,69 +526,9 @@ func _on_workbench_crafted(item_type: String) -> void:
 		game_sounds.play_pickup_sound()
 
 
-func _cut_ground_hole(cave_pos: Vector3) -> void:
-	# Originalen Boden entfernen und durch Kacheln mit Loch ersetzen
-	var ground_node: Node = get_node_or_null("Ground")
-	if not ground_node:
-		return
-
-	var ground_mat: Material = null
-	for child in ground_node.get_children():
-		if child is MeshInstance3D:
-			ground_mat = child.get_surface_override_material(0)
-			break
-
-	ground_node.queue_free()
-
-	# Loch: Rechteck um den Höhlenbereich (Tunnel geht in -Z Richtung)
-	# cave_pos ist der Eingang, Tunnel geht 20m in -Z, Raum nochmal 14m
-	# Loch für Rampe + 3 Räume
-	# Rampe: 5m breit, ab cave_pos.z -1 bis -18
-	var tunnel_x1: float = cave_pos.x - 3.5
-	var tunnel_x2: float = cave_pos.x + 3.5
-	var tunnel_z2: float = cave_pos.z - 1.0
-	var tunnel_z1: float = cave_pos.z - 20.0
-
-	# Räume: Raum1 unter Rampe, Raum2 rechts versetzt (+20x), Raum3 noch weiter hinten
-	var room_x1: float = cave_pos.x - 9.0
-	var room_x2: float = cave_pos.x + 30.0  # Raum 2 ist ~20m rechts
-	var room_z2: float = cave_pos.z - 18.0
-	var room_z1: float = cave_pos.z - 50.0  # Raum 3 ist weit hinten
-
-	# Boden in 5x5 Kacheln für mehr Präzision
-	var tile: float = 5.0
-	for tx in range(40):
-		for tz in range(40):
-			var x: float = -100.0 + float(tx) * tile + tile / 2.0
-			var z: float = -100.0 + float(tz) * tile + tile / 2.0
-
-			# Liegt diese Kachel im Tunnel-Loch?
-			var in_tunnel: bool = (x + tile / 2.0 > tunnel_x1 and x - tile / 2.0 < tunnel_x2 \
-				and z + tile / 2.0 > tunnel_z1 and z - tile / 2.0 < tunnel_z2)
-			# Liegt diese Kachel im Raum-Loch?
-			var in_room: bool = (x + tile / 2.0 > room_x1 and x - tile / 2.0 < room_x2 \
-				and z + tile / 2.0 > room_z1 and z - tile / 2.0 < room_z2)
-			if in_tunnel or in_room:
-				continue
-
-			var tb := StaticBody3D.new()
-			add_child(tb)
-
-			var tc := CollisionShape3D.new()
-			var ts := BoxShape3D.new()
-			ts.size = Vector3(tile, 0.2, tile)
-			tc.shape = ts
-			tc.position = Vector3(x, -0.1, z)
-			tb.add_child(tc)
-
-			var tm := MeshInstance3D.new()
-			var tmm := BoxMesh.new()
-			tmm.size = Vector3(tile, 0.2, tile)
-			tm.mesh = tmm
-			if ground_mat:
-				tm.material_override = ground_mat
-			tm.position = Vector3(x, -0.1, z)
-			tb.add_child(tm)
+func _on_portal_teleported(message: String) -> void:
+	if message != "":
+		_show_message(message, 3.0)
 
 
 func _show_message(text: String, duration: float = 3.0) -> void:
