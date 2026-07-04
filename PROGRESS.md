@@ -557,3 +557,12 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 - **Projekt-Umzug:** `project.godot`, `scenes/`, `scripts/`, `assets/` von `game/` ins Repository-Root verschoben — Xogot auf dem iPad kann das Repo nur öffnen, wenn `project.godot` im Root liegt. `res://`-Pfade bleiben unverändert gültig.
 - **README.md:** mit Screenshot (docs/screenshot.jpg), Feature-Liste, Steuerungstabelle, Xogot-Anleitung
 - CLAUDE.md-Pfade aktualisiert
+
+---
+
+## 2026-07-04 – iPad: Rennen, Springen, Kind retten per Touch
+
+- **Rennen:** Joystick voll ausgelenkt (>0.92) = Sprinten (wie Shift)
+- **Sprung-Button** (⬆) unten rechts neben dem Button-Stapel
+- **Kind retten:** Aufsammeln-Button erscheint auch bei Kindern in der Nähe (Text wechselt zu "Kind retten [E]"), Button-Handler prüft Rettung zuerst
+- README um iPad-Hinweise ergänzt

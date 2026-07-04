@@ -489,7 +489,15 @@ func _on_harvest_pressed() -> void:
 		_show_message("Ziehe zuerst deine Axt! [Q]", 1.5)
 
 
+func _on_jump_pressed() -> void:
+	if player.is_on_floor():
+		player.velocity.y = player.jump_force
+
+
 func _on_pickup_pressed() -> void:
+	# Touch-Button: erst Kind retten, dann Items aufsammeln
+	if _try_rescue_child():
+		return
 	_try_pickup_nearby()
 
 
@@ -613,6 +621,21 @@ func _create_touch_buttons() -> void:
 	workbench_button.pressed.connect(_on_workbench_button_pressed)
 	hud.add_child(workbench_button)
 
+	# Sprung-Button: unten rechts neben dem Button-Stapel, immer sichtbar
+	var jump_button := Button.new()
+	jump_button.text = "⬆"
+	jump_button.anchor_left = 1.0
+	jump_button.anchor_top = 1.0
+	jump_button.anchor_right = 1.0
+	jump_button.anchor_bottom = 1.0
+	jump_button.offset_left = -300.0
+	jump_button.offset_top = -110.0
+	jump_button.offset_right = -236.0
+	jump_button.offset_bottom = -46.0
+	jump_button.add_theme_font_size_override("font_size", 26)
+	jump_button.pressed.connect(_on_jump_pressed)
+	hud.add_child(jump_button)
+
 	# Hilfe-Button: oben rechts, immer sichtbar
 	help_button = Button.new()
 	help_button.text = "?"
@@ -650,7 +673,7 @@ func _update_action_buttons() -> void:
 	harvest_button.visible = near_tree and player.axe_active
 	harvest_button.text = "Baum hacken [E]"
 
-	# Pickup-Button: sichtbar wenn Items in der Nähe
+	# Pickup-Button: sichtbar wenn Items ODER ein Kind in der Nähe
 	var near_item := false
 	var items: Array = _find_dropped_items()
 	for item in items:
@@ -658,7 +681,13 @@ func _update_action_buttons() -> void:
 		if dist < 3.0:
 			near_item = true
 			break
-	pickup_button.visible = near_item
+	var near_child := false
+	for lost_child in get_tree().get_nodes_in_group("lost_child"):
+		if player.global_position.distance_to(lost_child.global_position) < 3.0:
+			near_child = true
+			break
+	pickup_button.visible = near_item or near_child
+	pickup_button.text = "Kind retten [E]" if near_child else "Aufsammeln [E]"
 
 	# Drop-Button: sichtbar wenn Inventar nicht leer
 	drop_button.visible = player.inventory.size() > 0

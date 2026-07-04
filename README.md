@@ -53,7 +53,7 @@ godot --path .
 | ? | Hilfe-Fenster mit allen Befehlen |
 | F1 | Cheat-Menü (Entwickler) |
 
-Auf dem iPad erscheinen stattdessen kontextabhängige Touch-Buttons, die Hotbar-Slots sind antippbar.
+Auf dem iPad erscheinen stattdessen kontextabhängige Touch-Buttons, die Hotbar-Slots sind antippbar. **Rennen:** Joystick ganz nach außen drücken. **Springen:** ⬆-Button unten rechts.
 
 ## Projekt-Struktur
 

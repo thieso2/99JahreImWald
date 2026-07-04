@@ -78,7 +78,8 @@ func _physics_process(delta: float) -> void:
 
 	# Input sammeln (Joystick oder Tastatur)
 	var input_dir := Vector2.ZERO
-	var shift_held := Input.is_key_pressed(KEY_SHIFT)
+	# Sprinten: Shift-Taste ODER Joystick voll ausgelenkt (iPad)
+	var shift_held := Input.is_key_pressed(KEY_SHIFT) or joystick_direction.length() > 0.92
 
 	if joystick_direction.length() > 0.1:
 		input_dir = joystick_direction
