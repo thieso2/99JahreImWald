@@ -1,0 +1,73 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "a79db2b2603c",
+  "session_id": "805fd9e5-3cf1-4ab0-b60b-8c463947c581",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T15:27:57.567651Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "PROGRESS.md",
+    "game/assets/textures/LICENSE.md",
+    "game/assets/textures/bark_color.jpg",
+    "game/assets/textures/bark_normal.jpg",
+    "game/assets/textures/grass_color.jpg",
+    "game/assets/textures/grass_normal.jpg",
+    "game/assets/textures/rock_color.jpg",
+    "game/assets/textures/rock_normal.jpg",
+    "game/scripts/forest_generator.gd",
+    "game/scripts/landscape_generator.gd",
+    "game/scripts/lost_child.gd.uid",
+    "game/scripts/portal.gd.uid",
+    "game/scripts/save_system.gd.uid",
+    "game/scripts/underground_world.gd",
+    "game/scripts/underground_world.gd.uid",
+    "game/scripts/wolf_enemy.gd.uid"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "9dd77a6629ec",
+  "checkpoint_transcript_start": 1046,
+  "transcript_lines_at_start": 1046,
+  "token_usage": {
+    "input_tokens": 759,
+    "cache_creation_tokens": 21184,
+    "cache_read_tokens": 5331314,
+    "output_tokens": 13482,
+    "api_call_count": 22
+  },
+  "session_metrics": {
+    "turn_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T15:27:57.541056Z",
+    "agent_lines": 103,
+    "agent_removed": 62,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 103,
+    "total_lines_changed": 165,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 7,
+      "user_lines_removed": 0,
+      "agent_lines_added": 187,
+      "agent_lines_removed": 62,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 7
+      }
+    }
+  ]
+}
