@@ -1,0 +1,69 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "7869114bf469",
+  "session_id": "805fd9e5-3cf1-4ab0-b60b-8c463947c581",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T14:47:23.646Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "PROGRESS.md",
+    "game/project.godot",
+    "game/scenes/main.tscn",
+    "game/scripts/dropped_item.gd",
+    "game/scripts/game_manager.gd",
+    "game/scripts/help_menu.gd",
+    "game/scripts/help_menu.gd.uid",
+    "game/scripts/inventory_bar.gd",
+    "game/scripts/player.gd",
+    "game/scripts/rabbit_animal.gd",
+    "game/scripts/rabbit_animal.gd.uid",
+    "game/scripts/wolf_enemy.gd"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "e8e3dbeb7db9",
+  "checkpoint_transcript_start": 275,
+  "transcript_lines_at_start": 275,
+  "token_usage": {
+    "input_tokens": 589,
+    "cache_creation_tokens": 52178,
+    "cache_read_tokens": 3347485,
+    "output_tokens": 27854,
+    "api_call_count": 26
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T14:47:23.630614Z",
+    "agent_lines": 1174,
+    "agent_removed": 99,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1174,
+    "total_lines_changed": 1273,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 7,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1258,
+      "agent_lines_removed": 99,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 7
+      }
+    }
+  ]
+}

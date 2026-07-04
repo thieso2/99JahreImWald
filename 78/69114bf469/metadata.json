@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "7869114bf469",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "PROGRESS.md",
+    "game/project.godot",
+    "game/scenes/main.tscn",
+    "game/scripts/dropped_item.gd",
+    "game/scripts/game_manager.gd",
+    "game/scripts/help_menu.gd",
+    "game/scripts/help_menu.gd.uid",
+    "game/scripts/inventory_bar.gd",
+    "game/scripts/player.gd",
+    "game/scripts/rabbit_animal.gd",
+    "game/scripts/rabbit_animal.gd.uid",
+    "game/scripts/wolf_enemy.gd"
+  ],
+  "sessions": [
+    {
+      "metadata": "/78/69114bf469/0/metadata.json",
+      "transcript": "/78/69114bf469/0/full.jsonl",
+      "content_hash": "/78/69114bf469/0/content_hash.txt",
+      "prompt": "/78/69114bf469/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 589,
+    "cache_creation_tokens": 52178,
+    "cache_read_tokens": 3347485,
+    "output_tokens": 27854,
+    "api_call_count": 26
+  }
+}

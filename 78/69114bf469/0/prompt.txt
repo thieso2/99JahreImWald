@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bisvte0pj</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-thies-Projects-GitHub-Quentin-99JahreImWald/805fd9e5-3cf1-4ab0-b60b-8c463947c581/tasks/bisvte0pj.output</output-file>
+<status>completed</status>
+<summary>Background command "Start game in Godot for testing" completed (exit code 0)</summary>
+</task-notification>
