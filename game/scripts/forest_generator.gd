@@ -21,9 +21,16 @@ var placed_positions: Array[Vector3] = []
 
 
 func _ready() -> void:
-	# Materialien vorbereiten
+	# Materialien vorbereiten – Stämme mit echter Rinden-Textur (CC0)
 	trunk_material = StandardMaterial3D.new()
-	trunk_material.albedo_color = Color(0.42, 0.28, 0.16, 1)
+	trunk_material.albedo_texture = preload("res://assets/textures/bark_color.jpg")
+	trunk_material.albedo_color = Color(1.0, 0.85, 0.7, 1)
+	trunk_material.normal_enabled = true
+	trunk_material.normal_texture = preload("res://assets/textures/bark_normal.jpg")
+	trunk_material.roughness = 0.95
+	trunk_material.uv1_triplanar = true
+	trunk_material.uv1_world_triplanar = true
+	trunk_material.uv1_scale = Vector3(0.8, 0.8, 0.8)
 
 	# Mischung aus Grün und Grau-Grün (wie im Roblox-Vorbild)
 	var green_colors := [

@@ -37,6 +37,7 @@ func _ready() -> void:
 	rng.seed = 123  # Fester Seed für konsistente Landschaft
 
 	_create_materials()
+	_texture_main_ground()
 	_generate_plateaus()
 	_generate_tall_grass_areas()
 	_generate_ponds()
@@ -47,13 +48,41 @@ func _ready() -> void:
 	_generate_rocks()
 
 
-func _create_materials() -> void:
-	# Gras
-	grass_mat = StandardMaterial3D.new()
-	grass_mat.albedo_color = Color(0.2, 0.5, 0.12, 1)
+func _textured_mat(color_tex: Texture2D, normal_tex: Texture2D, tint: Color, uv_scale: float) -> StandardMaterial3D:
+	# Material mit echter Foto-Textur (CC0 von ambientCG)
+	# World-Triplanar: Textur liegt verzerrungsfrei auf allen Flächen, unabhängig von Mesh-UVs
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = color_tex
+	mat.albedo_color = tint
+	mat.normal_enabled = true
+	mat.normal_texture = normal_tex
+	mat.roughness = 1.0
+	mat.uv1_triplanar = true
+	mat.uv1_world_triplanar = true
+	mat.uv1_scale = Vector3(uv_scale, uv_scale, uv_scale)
+	return mat
 
-	dark_grass_mat = StandardMaterial3D.new()
-	dark_grass_mat.albedo_color = Color(0.15, 0.4, 0.1, 1)
+
+func _texture_main_ground() -> void:
+	# Der große Waldboden aus main.tscn bekommt die Gras-Textur
+	var ground: Node = get_parent().get_node_or_null("Ground")
+	if not ground:
+		return
+	for child in ground.get_children():
+		if child is MeshInstance3D:
+			child.set_surface_override_material(0, grass_mat)
+
+
+func _create_materials() -> void:
+	var grass_tex: Texture2D = preload("res://assets/textures/grass_color.jpg")
+	var grass_norm: Texture2D = preload("res://assets/textures/grass_normal.jpg")
+	var rock_tex: Texture2D = preload("res://assets/textures/rock_color.jpg")
+	var rock_norm: Texture2D = preload("res://assets/textures/rock_normal.jpg")
+
+	# Gras (Textur wird über den Farbton eingefärbt)
+	grass_mat = _textured_mat(grass_tex, grass_norm, Color(0.75, 0.95, 0.65, 1), 0.25)
+
+	dark_grass_mat = _textured_mat(grass_tex, grass_norm, Color(0.5, 0.65, 0.45, 1), 0.25)
 
 	# Busch-Farben (verschiedene Grüntöne)
 	var bush_colors := [
@@ -81,28 +110,22 @@ func _create_materials() -> void:
 	sand_mat.albedo_color = Color(0.72, 0.62, 0.42, 1)
 
 	# Plateaus (Grasdecke oben)
-	plateau_mat = StandardMaterial3D.new()
-	plateau_mat.albedo_color = Color(0.28, 0.58, 0.16, 1)
+	plateau_mat = _textured_mat(grass_tex, grass_norm, Color(0.85, 1.0, 0.7, 1), 0.25)
 
 	# Plateau-Seiten (Erde/Stein)
-	plateau_side_mat = StandardMaterial3D.new()
-	plateau_side_mat.albedo_color = Color(0.4, 0.3, 0.2, 1)
+	plateau_side_mat = _textured_mat(rock_tex, rock_norm, Color(0.8, 0.6, 0.45, 1), 0.4)
 
 	# Hohes Gras
-	tall_grass_mat = StandardMaterial3D.new()
-	tall_grass_mat.albedo_color = Color(0.25, 0.55, 0.12, 1)
+	tall_grass_mat = _textured_mat(grass_tex, grass_norm, Color(0.7, 0.9, 0.55, 1), 0.5)
 
 	# Kurzes Gras (heller)
-	short_grass_mat = StandardMaterial3D.new()
-	short_grass_mat.albedo_color = Color(0.38, 0.68, 0.22, 1)
+	short_grass_mat = _textured_mat(grass_tex, grass_norm, Color(0.95, 1.0, 0.75, 1), 0.5)
 
 	# Wiese (helleres Grün)
-	meadow_mat = StandardMaterial3D.new()
-	meadow_mat.albedo_color = Color(0.35, 0.65, 0.2, 1)
+	meadow_mat = _textured_mat(grass_tex, grass_norm, Color(0.95, 1.0, 0.7, 1), 0.3)
 
 	# Steine
-	rock_mat = StandardMaterial3D.new()
-	rock_mat.albedo_color = Color(0.4, 0.38, 0.35, 1)
+	rock_mat = _textured_mat(rock_tex, rock_norm, Color(0.9, 0.88, 0.85, 1), 0.6)
 
 	# Blumen
 	var flower_colors := [

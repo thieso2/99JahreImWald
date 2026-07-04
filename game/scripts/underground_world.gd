@@ -31,54 +31,25 @@ func _ready() -> void:
 	_spawn_enemies()
 
 
-func _make_rock_material(base_color: Color, noise_seed: int, noise_scale: float = 4.0) -> StandardMaterial3D:
-	# Felsmaterial mit prozeduraler Noise-Textur und Normal-Map
-	# Triplanar-Mapping, damit die Textur auf allen Flächen ohne Verzerrung liegt
+func _make_rock_material(tint: Color, uv_scale: float) -> StandardMaterial3D:
+	# Echte Fels-Foto-Textur (CC0 von ambientCG) mit Normal-Map
+	# World-Triplanar: liegt verzerrungsfrei auf allen Flächen
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = base_color
-	mat.roughness = 0.95
-
-	# Farbvariation über Noise
-	var noise := FastNoiseLite.new()
-	noise.seed = noise_seed
-	noise.frequency = 0.02
-	noise.fractal_octaves = 4
-	var tex := NoiseTexture2D.new()
-	tex.noise = noise
-	tex.width = 256
-	tex.height = 256
-	tex.seamless = true
-	var ramp := Gradient.new()
-	ramp.set_color(0, Color(0.55, 0.5, 0.45, 1))
-	ramp.set_color(1, Color(1.15, 1.1, 1.05, 1))
-	tex.color_ramp = ramp
-	mat.albedo_texture = tex
-
-	# Normal-Map für Fels-Struktur (Licht bricht sich an Unebenheiten)
-	var nnoise := FastNoiseLite.new()
-	nnoise.seed = noise_seed + 1
-	nnoise.frequency = 0.05
-	nnoise.fractal_octaves = 5
-	var ntex := NoiseTexture2D.new()
-	ntex.noise = nnoise
-	ntex.width = 256
-	ntex.height = 256
-	ntex.seamless = true
-	ntex.as_normal_map = true
-	ntex.bump_strength = 8.0
+	mat.albedo_texture = preload("res://assets/textures/rock_color.jpg")
+	mat.albedo_color = tint
 	mat.normal_enabled = true
-	mat.normal_texture = ntex
-	mat.normal_scale = 1.0
-
+	mat.normal_texture = preload("res://assets/textures/rock_normal.jpg")
+	mat.roughness = 0.95
 	mat.uv1_triplanar = true
-	mat.uv1_scale = Vector3(noise_scale, noise_scale, noise_scale)
+	mat.uv1_world_triplanar = true
+	mat.uv1_scale = Vector3(uv_scale, uv_scale, uv_scale)
 	return mat
 
 
 func _create_materials() -> void:
-	rock_mat = _make_rock_material(Color(0.32, 0.3, 0.28, 1), 100, 3.0)
-	dark_rock_mat = _make_rock_material(Color(0.2, 0.18, 0.17, 1), 200, 4.0)
-	floor_mat = _make_rock_material(Color(0.28, 0.24, 0.21, 1), 300, 5.0)
+	rock_mat = _make_rock_material(Color(0.85, 0.8, 0.75, 1), 0.35)
+	dark_rock_mat = _make_rock_material(Color(0.5, 0.45, 0.42, 1), 0.45)
+	floor_mat = _make_rock_material(Color(0.75, 0.62, 0.5, 1), 0.3)
 
 
 func _build_cavern() -> void:
@@ -179,9 +150,16 @@ func _add_roots() -> void:
 	# Baumwurzeln hängen von der Decke – wir sind ja unter dem Wald!
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 888
+	# Wurzeln mit echter Rinden-Textur
 	var root_mat := StandardMaterial3D.new()
-	root_mat.albedo_color = Color(0.35, 0.25, 0.15, 1)
-	root_mat.roughness = 0.9
+	root_mat.albedo_texture = preload("res://assets/textures/bark_color.jpg")
+	root_mat.albedo_color = Color(0.9, 0.8, 0.7, 1)
+	root_mat.normal_enabled = true
+	root_mat.normal_texture = preload("res://assets/textures/bark_normal.jpg")
+	root_mat.roughness = 0.95
+	root_mat.uv1_triplanar = true
+	root_mat.uv1_world_triplanar = true
+	root_mat.uv1_scale = Vector3(1.5, 1.5, 1.5)
 
 	for i in range(22):
 		var angle: float = rng.randf() * TAU

@@ -486,3 +486,23 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 ### Bug-Fix: Drops in der Unterwelt
 - Gedroppte Items hatten die Ruhehöhe y=0.25 hart-codiert (Waldboden) → Drops in der Unterwelt wären zur Oberfläche teleportiert
 - Neue `rest_height`-Logik: Spawn unterhalb y=-50 → Ruhehöhe -99.75 (Unterwelt-Boden)
+
+---
+
+## 2026-07-04 – Echte Foto-Texturen (CC0 von ambientCG)
+
+### Texturen heruntergeladen
+- **Quelle:** ambientCG.com, alle CC0 (Public Domain) – Lizenz in `game/assets/textures/LICENSE.md`
+- `grass_color/normal.jpg` (Grass001), `rock_color/normal.jpg` (Rock030), `bark_color/normal.jpg` (Bark012)
+- Jeweils 1K-Auflösung, Color- + Normal-Map
+
+### Angewendet auf
+- **Waldboden & Wiesen:** Gras-Textur mit verschiedenen Grün-Tönungen (Boden, Wiesen, Plateaus, hohes/kurzes Gras)
+- **Unterwelt:** Fels-Textur ersetzt die prozeduralen Noise-Texturen (Wände, Boden, Decke, Felsbrocken, Stalagmiten, Stalaktiten)
+- **Bäume:** Stämme mit Rinden-Textur
+- **Unterwelt-Wurzeln:** ebenfalls Rinden-Textur
+- **Landschafts-Steine & Plateau-Seiten:** Fels-Textur
+
+### Technik
+- `_textured_mat()`-Helper: Albedo-Textur + Normal-Map + Farbton (albedo_color multipliziert die Textur)
+- **World-Triplanar-Mapping:** Textur liegt verzerrungsfrei auf allen prozeduralen Meshes, unabhängig von deren UVs und Skalierung
