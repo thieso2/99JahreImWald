@@ -1,13 +1,13 @@
 extends CharacterBody3D
 
-# Hase – friedliches Tier, hoppelt durch den Wald
-# Flieht vor dem Spieler, kann mit der Axt erlegt werden
+# Hase – friedliches Tier, hoppelt nah am Lagerfeuer herum
+# Flieht nur wenn er angegriffen wird, kann mit der Axt erlegt werden
 # Drops: 1-2 Fleischstückchen, manchmal ein Hasenfuß
 
 @export var hop_speed: float = 2.0
 @export var flee_speed: float = 4.5
 @export var flee_range: float = 5.0
-@export var max_hp: float = 1.0
+@export var max_hp: float = 2.0
 
 enum State { IDLE, HOPPING, FLEEING }
 var current_state: State = State.IDLE
@@ -15,6 +15,7 @@ var animal_name: String = "Hase"
 
 var hp: float = 1.0
 var hop_target: Vector3 = Vector3.ZERO
+var home_position: Vector3 = Vector3.ZERO  # Bleibt in der Nähe seines Spawn-Punkts
 var idle_timer: float = 0.0
 var hop_cycle: float = 0.0
 
@@ -28,6 +29,7 @@ var dropped_item_script: GDScript = null
 func _ready() -> void:
 	hp = max_hp
 	add_to_group("animal")
+	home_position = global_position
 	idle_timer = randf_range(1.0, 3.0)
 	dropped_item_script = preload("res://scripts/dropped_item.gd")
 
@@ -71,7 +73,6 @@ func _physics_process(delta: float) -> void:
 				head.rotation.x = sin(Time.get_ticks_msec() * 0.01) * 0.03
 
 	move_and_slide()
-	_check_for_player()
 
 
 func _process_idle(delta: float) -> void:
@@ -118,14 +119,6 @@ func _process_fleeing(delta: float) -> void:
 	_face_direction(dir, delta)
 
 
-func _check_for_player() -> void:
-	if current_state == State.FLEEING:
-		return
-	var player: CharacterBody3D = _get_nearest_player()
-	if player and global_position.distance_to(player.global_position) < flee_range:
-		current_state = State.FLEEING
-
-
 func _get_nearest_player() -> CharacterBody3D:
 	var players: Array = get_tree().get_nodes_in_group("player")
 	for p in players:
@@ -140,6 +133,10 @@ func take_damage(amount: float) -> void:
 		_play_squeak()
 		_spawn_drops()
 		queue_free()
+	else:
+		# Angeschossener Hase flieht vor dem Spieler
+		_play_squeak()
+		current_state = State.FLEEING
 
 
 func _spawn_drops() -> void:
@@ -197,9 +194,16 @@ func _play_squeak() -> void:
 
 
 func _pick_hop_target() -> void:
+	# Hoppelt um seinen Heimatpunkt herum, damit er nicht wegdriftet
 	var angle: float = randf() * TAU
-	var dist: float = randf_range(2.0, 5.0)
-	hop_target = global_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+	var dist: float = randf_range(1.0, 4.0)
+	hop_target = home_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+	# Nicht in die Lagerfeuer-Zone (8m um den Ursprung) hoppeln
+	var flat: Vector3 = Vector3(hop_target.x, 0, hop_target.z)
+	if flat.length() < 8.5:
+		flat = flat.normalized() * 8.5
+		hop_target.x = flat.x
+		hop_target.z = flat.z
 
 
 func _face_direction(dir: Vector3, delta: float) -> void:
