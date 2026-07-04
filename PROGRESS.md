@@ -548,3 +548,12 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 ### iPad-Check
 - project.godot war schon iPad-ready: Viewport 1194x834, Landscape, canvas_items-Stretch, Mobile-Renderer
 - Bestehende Touch-Features: Joystick (links), Kamera-Drag (rechts), Pinch-Zoom, antippbare Minimap
+
+---
+
+## 2026-07-04 – GitHub-Repo, README & Projekt-Umzug ins Root
+
+- **Public GitHub-Repo:** https://github.com/thieso2/99JahreImWald (main als Default-Branch)
+- **Projekt-Umzug:** `project.godot`, `scenes/`, `scripts/`, `assets/` von `game/` ins Repository-Root verschoben — Xogot auf dem iPad kann das Repo nur öffnen, wenn `project.godot` im Root liegt. `res://`-Pfade bleiben unverändert gültig.
+- **README.md:** mit Screenshot (docs/screenshot.jpg), Feature-Liste, Steuerungstabelle, Xogot-Anleitung
+- CLAUDE.md-Pfade aktualisiert

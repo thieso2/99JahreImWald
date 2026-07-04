@@ -9,10 +9,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Running the Game
 
 ```bash
-godot --path /Users/thies/Projects/GitHub/Quentin/99JahreImWald/game/
+godot --path /Users/thies/Projects/GitHub/Quentin/99JahreImWald/
 ```
 
-- The Godot project root is `game/`, not the repository root
+- The Godot project root is the repository root (project.godot liegt im Root, damit Xogot auf dem iPad das Repo direkt öffnen kann)
 
 ## Architecture
 
@@ -50,7 +50,7 @@ Single scene architecture with one main scene (`scenes/main.tscn`) and GDScript 
 
 - **Git commits:** Commit progress regularly after completing a feature, fixing a bug, or making significant changes. Do not wait for the user to ask — commit proactively.
 - **PROGRESS.md:** Must be updated after every development step. Documents all changes made, bugs fixed, and important decisions with dates. Append new entries at the bottom.
-- **Test after each step:** After every development step, start the game with `godot --path /Users/thies/Projects/GitHub/Quentin/99JahreImWald/game/` so the user can test. Wait for the user to close the game before continuing with the next step.
+- **Test after each step:** After every development step, start the game with `godot --path /Users/thies/Projects/GitHub/Quentin/99JahreImWald/` so the user can test. Wait for the user to close the game before continuing with the next step.
 
 ## Documentation
 
