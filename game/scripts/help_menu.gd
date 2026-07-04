@@ -25,6 +25,8 @@ var sections: Array = [
 		["T", "Fackel anzünden / ausmachen"],
 		["P", "Item platzieren"],
 		["B", "Werkbank öffnen (in der Nähe)"],
+		["C", "Fleisch braten (am Lagerfeuer)"],
+		["V", "Gebratenes Fleisch essen"],
 	]],
 	["Inventar", [
 		["Tab / Shift + Tab", "Slot wechseln"],

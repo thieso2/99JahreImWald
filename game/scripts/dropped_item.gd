@@ -122,6 +122,9 @@ func _build_item_mesh() -> void:
 			"meat_small": _build_meat_small()
 			"meat_chunk": _build_meat_chunk()
 			"steak": _build_steak()
+			"cooked_meat_small": _build_meat_small(true)
+			"cooked_meat_chunk": _build_meat_chunk(true)
+			"cooked_steak": _build_steak(true)
 			"rabbit_foot": _build_rabbit_foot()
 			"wolf_pelt": _build_wolf_pelt()
 			"cultist_gem": _build_cultist_gem()
@@ -427,12 +430,12 @@ func _build_wall_item() -> void:
 	add_child(rope2)
 
 
-func _build_meat_small() -> void:
-	# FLEISCHSTÜCKCHEN: Kleiner rosa-roter Fleischbrocken
+func _build_meat_small(cooked: bool = false) -> void:
+	# FLEISCHSTÜCKCHEN: Kleiner rosa-roter Fleischbrocken (gebraten: braun)
 	var meat_mat := StandardMaterial3D.new()
-	meat_mat.albedo_color = Color(0.85, 0.35, 0.3, 1)
+	meat_mat.albedo_color = Color(0.5, 0.3, 0.15, 1) if cooked else Color(0.85, 0.35, 0.3, 1)
 	var fat_mat := StandardMaterial3D.new()
-	fat_mat.albedo_color = Color(0.95, 0.85, 0.75, 1)
+	fat_mat.albedo_color = Color(0.7, 0.55, 0.35, 1) if cooked else Color(0.95, 0.85, 0.75, 1)
 
 	var meat := MeshInstance3D.new()
 	var mm := SphereMesh.new()
@@ -455,10 +458,10 @@ func _build_meat_small() -> void:
 	add_child(fat)
 
 
-func _build_meat_chunk() -> void:
-	# FLEISCHKLUMPEN: Großer dunkelroter Brocken mit Knochen
+func _build_meat_chunk(cooked: bool = false) -> void:
+	# FLEISCHKLUMPEN: Großer dunkelroter Brocken mit Knochen (gebraten: braun)
 	var meat_mat := StandardMaterial3D.new()
-	meat_mat.albedo_color = Color(0.65, 0.2, 0.15, 1)
+	meat_mat.albedo_color = Color(0.45, 0.25, 0.12, 1) if cooked else Color(0.65, 0.2, 0.15, 1)
 	var bone_mat := StandardMaterial3D.new()
 	bone_mat.albedo_color = Color(0.95, 0.92, 0.85, 1)
 
@@ -495,12 +498,12 @@ func _build_meat_chunk() -> void:
 	add_child(knob)
 
 
-func _build_steak() -> void:
-	# STEAK: Flache braun-rote Scheibe mit Grillstreifen
+func _build_steak(cooked: bool = false) -> void:
+	# STEAK: Flache braun-rote Scheibe mit Grillstreifen (gebraten: dunkelbraun)
 	var steak_mat := StandardMaterial3D.new()
-	steak_mat.albedo_color = Color(0.55, 0.25, 0.15, 1)
+	steak_mat.albedo_color = Color(0.4, 0.22, 0.1, 1) if cooked else Color(0.55, 0.25, 0.15, 1)
 	var stripe_mat := StandardMaterial3D.new()
-	stripe_mat.albedo_color = Color(0.3, 0.12, 0.08, 1)
+	stripe_mat.albedo_color = Color(0.2, 0.1, 0.05, 1) if cooked else Color(0.3, 0.12, 0.08, 1)
 
 	var steak := MeshInstance3D.new()
 	var sm := CylinderMesh.new()

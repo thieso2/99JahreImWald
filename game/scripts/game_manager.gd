@@ -250,6 +250,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_torch_toggle_pressed()
 	elif event.is_action_pressed("action_place"):
 		_on_place_pressed()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_C:
+			_on_cook_pressed()
+		elif event.keycode == KEY_V:
+			_on_eat_pressed()
 
 
 func _process(delta: float) -> void:
@@ -649,6 +654,86 @@ func _on_workbench_crafted(item_type: String) -> void:
 	_show_message("%s gebaut!" % name_de, 2.0)
 	if game_sounds:
 		game_sounds.play_pickup_sound()
+
+
+# Rohes Fleisch → gebratene Variante (am Lagerfeuer mit C)
+const COOK_MAP: Dictionary = {
+	"meat_small": "cooked_meat_small",
+	"meat_chunk": "cooked_meat_chunk",
+	"steak": "cooked_steak",
+}
+# Gebratenes Fleisch → HP-Heilung (mit V essen)
+const FOOD_HEAL: Dictionary = {
+	"cooked_meat_small": 15.0,
+	"cooked_meat_chunk": 30.0,
+	"cooked_steak": 50.0,
+}
+const ITEM_NAMES_DE: Dictionary = {
+	"meat_small": "Fleischstückchen",
+	"meat_chunk": "Fleischklumpen",
+	"steak": "Steak",
+	"cooked_meat_small": "Gebratenes Fleischstückchen",
+	"cooked_meat_chunk": "Gebratener Fleischklumpen",
+	"cooked_steak": "Gebratenes Steak",
+}
+
+
+func _on_cook_pressed() -> void:
+	if not player.is_near_campfire:
+		_show_message("Zum Braten musst du am Lagerfeuer sein!", 2.0)
+		return
+
+	# Erst das ausgewählte Item probieren, sonst das erste rohe Fleisch
+	var cook_idx: int = -1
+	if inventory_bar:
+		var sel: int = inventory_bar.get_selected_index()
+		if sel >= 0 and sel < player.inventory.size() and player.inventory[sel] in COOK_MAP:
+			cook_idx = sel
+	if cook_idx == -1:
+		for i in range(player.inventory.size()):
+			if player.inventory[i] in COOK_MAP:
+				cook_idx = i
+				break
+	if cook_idx == -1:
+		_show_message("Du hast kein rohes Fleisch zum Braten.", 2.0)
+		return
+
+	var raw: String = player.inventory[cook_idx]
+	var cooked: String = COOK_MAP[raw]
+	player.inventory[cook_idx] = cooked
+	player.inventory_changed.emit()
+	if game_sounds:
+		game_sounds.play_pickup_sound()
+	_show_message("%s gebraten! Mit V essen (+%d HP)" % [ITEM_NAMES_DE[raw], int(FOOD_HEAL[cooked])], 2.5)
+
+
+func _on_eat_pressed() -> void:
+	# Erst das ausgewählte Item probieren, sonst das erste gebratene Fleisch
+	var eat_idx: int = -1
+	if inventory_bar:
+		var sel: int = inventory_bar.get_selected_index()
+		if sel >= 0 and sel < player.inventory.size() and player.inventory[sel] in FOOD_HEAL:
+			eat_idx = sel
+	if eat_idx == -1:
+		for i in range(player.inventory.size()):
+			if player.inventory[i] in FOOD_HEAL:
+				eat_idx = i
+				break
+	if eat_idx == -1:
+		_show_message("Du hast nichts Gebratenes zum Essen. (C = Braten am Feuer)", 2.0)
+		return
+
+	if player.hp >= player.max_hp:
+		_show_message("Du bist schon bei voller Gesundheit!", 2.0)
+		return
+
+	var food: String = player.inventory[eat_idx]
+	player.inventory.remove_at(eat_idx)
+	player.inventory_changed.emit()
+	player.heal(FOOD_HEAL[food])
+	if game_sounds:
+		game_sounds.play_pickup_sound()
+	_show_message("%s gegessen! +%d HP" % [ITEM_NAMES_DE[food], int(FOOD_HEAL[food])], 2.0)
 
 
 func _on_portal_teleported(message: String) -> void:

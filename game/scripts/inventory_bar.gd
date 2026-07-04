@@ -311,6 +311,23 @@ func _add_item_icon(slot_x: float, slot_y: float, item_type: String, is_selected
 			_icon_rect(cx - 14, cy - 10, 28, 22, Color(0.35, 0.35, 0.38))
 			_icon_rect(cx - 5, cy - 10, 10, 22, Color(0.22, 0.22, 0.25))
 
+		"cooked_meat_small":
+			# Gebratenes Fleischstückchen: brauner Brocken
+			_icon_rect(cx - 8, cy - 6, 16, 14, Color(0.5, 0.3, 0.15))
+			_icon_rect(cx - 6, cy - 8, 12, 4, Color(0.7, 0.55, 0.35))
+
+		"cooked_meat_chunk":
+			# Gebratener Fleischklumpen: brauner Brocken mit Knochen
+			_icon_rect(cx - 11, cy - 6, 22, 16, Color(0.45, 0.25, 0.12))
+			_icon_rect(cx + 4, cy - 14, 4, 12, Color(0.95, 0.92, 0.85))
+			_icon_rect(cx + 2, cy - 17, 8, 5, Color(0.95, 0.92, 0.85))
+
+		"cooked_steak":
+			# Gebratenes Steak: dunkelbraune Scheibe mit Grillstreifen
+			_icon_rect(cx - 13, cy - 6, 26, 14, Color(0.4, 0.22, 0.1))
+			_icon_rect(cx - 11, cy - 3, 22, 2, Color(0.2, 0.1, 0.05))
+			_icon_rect(cx - 11, cy + 3, 22, 2, Color(0.2, 0.1, 0.05))
+
 		"cultist_gem":
 			# Kultisten-Edelstein: leuchtender lila Kristall (Raute)
 			_icon_rect(cx - 4, cy - 14, 8, 8, Color(0.7, 0.3, 0.9))
@@ -337,6 +354,9 @@ func _add_item_icon(slot_x: float, slot_y: float, item_type: String, is_selected
 			"rabbit_foot": name_de = "Hasenfuß"
 			"wolf_pelt": name_de = "Wolfspelz"
 			"cultist_gem": name_de = "Kultisten-Edelstein"
+			"cooked_meat_small": name_de = "Gebr. Fleischstückchen"
+			"cooked_meat_chunk": name_de = "Gebr. Fleischklumpen"
+			"cooked_steak": name_de = "Gebratenes Steak"
 		var name_label := Label.new()
 		name_label.text = name_de
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

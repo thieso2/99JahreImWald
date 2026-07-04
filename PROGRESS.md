@@ -506,3 +506,23 @@ Fortlaufende Dokumentation aller Entwicklungsschritte und wichtigen Entscheidung
 ### Technik
 - `_textured_mat()`-Helper: Albedo-Textur + Normal-Map + Farbton (albedo_color multipliziert die Textur)
 - **World-Triplanar-Mapping:** Textur liegt verzerrungsfrei auf allen prozeduralen Meshes, unabhängig von deren UVs und Skalierung
+
+---
+
+## 2026-07-04 – Fleisch braten & hellere Beleuchtung
+
+### Fleisch braten am Lagerfeuer
+- **C-Taste** (am Lagerfeuer): brät rohes Fleisch aus dem Inventar
+  - Bevorzugt das ausgewählte Hotbar-Item, sonst das erste rohe Fleisch
+  - Fleischstückchen → Gebratenes Fleischstückchen (+15 HP)
+  - Fleischklumpen → Gebratener Fleischklumpen (+30 HP)
+  - Steak → Gebratenes Steak (+50 HP)
+- **V-Taste:** isst gebratenes Fleisch und heilt HP (bei voller Gesundheit wird nicht gegessen)
+- Gebratene Varianten mit eigenen Drop-Modellen (braun) und Inventar-Icons
+- Hilfe-Fenster (?) um C und V ergänzt
+
+### Beleuchtung heller (Nutzer-Feedback: Texturen kaum sichtbar, Nacht zu dunkel)
+- Nacht-Lichtintensität 0.15 → 0.35, Nachtlicht-Farbe heller (0.4/0.4/0.6)
+- Nachthimmel heller (0.18/0.18/0.35)
+- Tag: Mittagshelligkeit 1.0 → 1.25, Morgen startet bei 0.65 statt 0.5
+- Umgebungslicht: Faktor 0.7 → 0.9 mit Mindestwert 0.35 (Texturen bleiben immer sichtbar)
